@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}配置{% endblock %}
+{% block css %}
+
+    <!-- Theme style -->
+
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+    {#    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">#}
+{% endblock %}
+
+{% block content %}
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            配置
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
+            <li class="active">配置</li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+
+
+    <section class="content">
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box box-danger">
+
+                    <!-- /.box-header -->
+                    <form class="form-horizontal " id="setting_form" action="/setting" method='POST'>
+
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="col-sm-2 control-label">扫描并发数</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_name" class="form-control" placeholder="扫描并发数" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-2 control-label">发送结果</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_ips" class="form-control"
+                                           placeholder="仅支持192.168.1.1-192.168.1.254和192.168.1.1格式" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-2 control-label">扫描端口</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_ports" class="form-control" placeholder="仅支持1-65535和80格式" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group ">
+                                <label for="inputPassword3" class="col-sm-2 control-label">循环周期</label>
+                                <div class="col-sm-4">
+                                    <input name="cron_time"  type="text" class="form-control"
+                                           placeholder="数字" required>
+                                </div>
+                                <div class="col-sm-6">
+
+                                    <select class="form-control" name="cron_unit">
+
+                                        <option value="hours">小时</option>
+                                        <option value="days">天</option>
+                                        <option value="no">不循环</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <!-- /.box-body -->
+                        <div class="box-footer">
+
+                            <button type="submit" id ="task_submit" class="btn btn-info pull-right">提交</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box -->
+
+
+            </div>
+            <!-- /.col -->
+
+            <!-- /.col -->
+        </div>
+
+
+        <!-- Default box -->
+
+        <!-- /.box-body -->
+
+    </section>
+
+
+
+
+
+    <!-- /.content -->
+
+{% endblock %}
+
+
+
+
+{% block script %}
+    <script src="static/plugins/messenger/messenger.min.js"></script>
+
+
+    <!-- FastClick -->
+    <script src="static/plugins/fastclick/fastclick.js"></script>
+    <!-- AdminLTE App -->
+    <script src="static/dist/js/app.min.js"></script>
+    <!-- DataTables -->
+    {#    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>#}
+    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<script>
+Messenger.options = {
+    extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+}
+
+</script>
+
+{% endblock %}

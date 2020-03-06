@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}添加任务{% endblock %}
+{% block css %}
+
+    <!-- Theme style -->
+
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+    {#    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">#}
+{% endblock %}
+
+{% block content %}
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            编辑任务
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
+            <li class="active">编辑任务</li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+
+
+    <section class="content">
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box box-danger">
+
+                    <!-- /.box-header -->
+                    <form class="form-horizontal " id="addtask_form" action="/edit_task" method='POST'>
+
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="col-sm-2 control-label">任务名称</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_name" class="form-control" placeholder="任务名称"
+                                           value="{{ task_args['task_name'] }}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-2 control-label">扫描IP</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_ips" class="form-control"
+                                           placeholder="仅支持192.168.1.1-192.168.1.254和192.168.1.1格式"
+                                           value="{{ task_args['task_ips'] }}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-2 control-label">扫描端口</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" name="task_ports" class="form-control"
+                                           placeholder="仅支持1-65535和80格式" value="{{ task_args['task_ports'] }}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group ">
+                                <label for="inputPassword3" class="col-sm-2 control-label">循环周期</label>
+                                <div class="col-sm-4">
+                                    <input name="cron_time" type="text" class="form-control"
+                                           placeholder="数字" value="{{ task_args['cron_time'] }}" required>
+                                </div>
+                                <div class="col-sm-6">
+
+                                    <select class="form-control" name="cron_unit">
+                                        {% if task_args["cron_unit"]=="hours" %}
+                                            <option value="hours" selected="selected">小时</option>
+                                        {% else %}
+                                            <option value="hours">小时</option>
+                                        {% endif %}
+
+                                        {% if task_args["cron_unit"]=="days" %}
+                                            <option value="days" selected="selected">天</option>
+                                        {% else %}
+                                            <option value="days">天</option>
+                                        {% endif %}
+
+                                        {% if task_args["cron_unit"]=="no" %}
+                                            <option value="no" selected="selected">不循环</option>
+                                        {% else %}
+                                            <option value="no">不循环</option>
+                                        {% endif %}
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <!-- /.box-body -->
+                        <div class="box-footer">
+
+                            <button type="submit" id="task_submit" class="btn btn-info pull-right">提交</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box -->
+
+
+            </div>
+            <!-- /.col -->
+
+            <!-- /.col -->
+        </div>
+
+
+        <!-- Default box -->
+
+        <!-- /.box-body -->
+
+    </section>
+
+
+
+
+
+    <!-- /.content -->
+
+{% endblock %}
+
+
+
+
+{% block script %}
+    <script src="static/plugins/messenger/messenger.min.js"></script>
+
+
+    <!-- FastClick -->
+    <script src="static/plugins/fastclick/fastclick.js"></script>
+    <!-- AdminLTE App -->
+    <script src="static/dist/js/app.min.js"></script>
+    <!-- DataTables -->
+    {#    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>#}
+    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script>
+        Messenger.options = {
+            extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+        }
+
+    </script>
+
+{% endblock %}

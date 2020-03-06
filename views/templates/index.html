@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block title %}主页{% endblock %}
+{% block css %}
+
+    <!-- Theme style -->
+
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            任务列表
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+
+
+    <section class="content">
+        <div class="row">
+
+            <div class="col-md-12">
+                <div class="box">
+
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table  table-hover"
+                               style="border-left:3px solid green;border-bottom:1px solid green" id="index_table">
+                            <thead>
+                            <tr>
+                                <th>任务名称</th>
+                                <th>扫描类型</th>
+                                <th>扫描IP</th>
+                                <th>扫描端口</th>
+                                <th>扫描次数</th>
+                                <th>创建时间</th>
+                                <th>循环周期</th>
+                                <th>下次扫描时间</th>
+                                <th>任务状态</th>
+                                <th>循环状态</th>
+                                <th>操作</th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for i in result %}
+                                <tr>
+                                    <td><b>{{ i['name'] }}</b></td>
+                                    {% if i['task_type']==1 %}
+                                        <td>循环扫描</td>
+                                    {% else %}
+                                        <td>常规扫描</td>
+                                    {% endif %}
+                                    <td>{{ i['ip'] }}</td>
+                                    <td>{{ i['port'] }}</td>
+                                    <td>{{ i['length'] }}</td>
+                                    <td>{{ i['create_time'] | strftime }}</td>
+
+                                    {% if i['task_type']==1 %}
+                                        <td>{{ i['cron'] | replace("days","天") | replace("hours","小时") }}</td>
+                                    {% else %}
+                                        <td>无</td>
+                                    {% endif %}
+
+                                    <td>{{ i['next_run_time'] }}</td>
+
+                                    {% if i['task_status']=='finish' %}
+                                        <td><span class="label label-success">扫描结束</span></td>
+                                    {% elif i['task_status']=='ready' %}
+
+                                        <td><span class="label label-primary">等待扫描</span></td>
+                                    {% else %}
+                                        <td><span class="label label-warning">扫描中</span></td>
+                                    {% endif %}
+
+                                    {% if i['next_run_time']!="无" %}
+                                        <td><span class="label label-success">循环中</span></td>
+                                    {% else %}
+                                        {% if i['task_type']==1 %}
+                                            <td><span class="label label-danger">已暂停</span></td>
+                                        {% else %}
+                                            <td><span class="label label-primary">无</span></td>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <td>
+                                        <div>
+                                            <button type="button" class="btn btn-info btn-xs"
+                                                    onclick="javascript:window.location.href='/task_detail?task_name={{ i['name'] }}'">
+                                                扫描详情
+                                            </button>
+                                            <button type="button" class="btn btn-info btn-xs"
+                                                    onclick="javascript:window.location.href='/total?task_name={{ i['name'] }}'">
+                                                查看统计
+                                            </button>
+                                        {% if i['next_run_time']!="无" %}
+                                            <button type="button" class="btn btn-info btn-xs"
+                                                    onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}'">
+                                                编辑任务
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-info btn-xs"  disabled="disabled"
+                                                    onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}' ">
+                                                编辑任务
+                                            </button>
+                                        {% endif %}
+                                            <button type="button" class="btn btn-info btn-xs" id="delete_task"
+                                                    name="{{ i['name'] }}">删除任务
+                                            </button>
+
+                                            {% if i['next_run_time']!="无" %}
+                                                <button type="button" class="btn btn-danger btn-xs"
+                                                        onclick="pause_scheduler('{{ i['name'] }}')">暂停循环
+                                                </button>
+                                            {% else %}
+                                                {% if i['task_type']==1 %}
+                                                    <button type="button" class="btn btn-info btn-xs"
+                                                            onclick="resume_scheduler('{{ i['name'] }}')">启动循环
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" disabled="disabled"
+                                                            class="btn btn-info btn-xs">
+                                                        停止循环
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+
+                                </tr>
+                            {% endfor %}
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+
+    <!-- /.content -->
+
+{% endblock %}
+
+
+
+
+{% block script %}
+    <script src="static/plugins/messenger/messenger.min.js"></script>
+
+
+
+    <!-- AdminLTE App -->
+    <script src="static/dist/js/app.min.js"></script>
+    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="static/plugins/echarts/echarts.min.js"></script>
+
+    <script>
+        Messenger.options = {
+            extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+        }
+        messenger = Messenger();
+
+        function pause_scheduler(task_name) {
+            $.getJSON('/pause_scheduler?task_name=' + task_name, function (data) {
+                if (JSON.stringify(data) != '{}') {
+                    if (data.status == "success") {
+                        messenger.post({
+                            message: data.content,
+                            type: "success"
+                        });
+                        setTimeout(" window.location.href = '/'", 1000);
+                    }
+                    else if (data.status == "error")
+                        messenger.post({
+                            message: data.content,
+                            type: "error"
+                        })
+                }
+
+            })
+        }
+
+        function resume_scheduler(task_name) {
+            $.getJSON('/resume_scheduler?task_name=' + task_name, function (data) {
+                if (JSON.stringify(data) != '{}') {
+                    if (data.status == "success") {
+                        messenger.post({
+                            message: data.content,
+                            type: "success"
+                        });
+                        setTimeout(" window.location.href = '/'", 1000);
+                    }
+                    else if (data.status == "error")
+                        messenger.post({
+                            message: data.content,
+                            type: "error"
+                        })
+                }
+
+            })
+        }
+    </script>
+
+
+
+{% endblock %}
