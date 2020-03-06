@@ -29,6 +29,37 @@ $("#task_submit").click(function () {
     return false;
 })
 
+$("#setting_submit").click(function () {
+
+
+    form = $("form#setting_form");
+    messenger = Messenger();
+
+    $.ajax({
+        type: form.attr('method'),
+        url: form.attr('action'),
+        data: form.serialize(),
+        success: function (data) {
+            var response = JSON.parse(data);
+            if (response.status == "success") {
+                messenger.post({
+                    message: response.content,
+                    type: "success"
+                });
+                setTimeout(" window.location.href = '" + response.redirect + "'", 3000);
+
+
+            }
+            else if (response.status == "error")
+                messenger.post({
+                    message: response.content,
+                    type: "error"
+                })
+        }
+    });
+    return false;
+})
+
 
 $(document).ready(function () {
     $("#diff_ports").hide();

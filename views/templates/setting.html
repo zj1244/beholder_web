@@ -9,7 +9,8 @@
 
     <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
     <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
-    {#    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">#}
+    <link rel="stylesheet" href="../static/plugins/bootstrap-switch/bootstrap-switch.min.css"
+          rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -32,7 +33,7 @@
 
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <div class="box box-danger">
 
                     <!-- /.box-header -->
@@ -40,52 +41,89 @@
 
                         <div class="box-body">
                             <div class="form-group">
-                                <label for="inputEmail3" class="col-sm-2 control-label">扫描并发数</label>
+                                <label class="col-sm-2 control-label">扫描并发数</label>
 
-                                <div class="col-sm-10">
-                                    <input type="text" name="task_name" class="form-control" placeholder="扫描并发数" required>
+                                <div class="col-sm-4">
+                                    <input type="text" name="scanning_num" class="form-control" placeholder="扫描并发数"
+                                           value="{{ setting_data['scanning_num'] }}"
+                                           >
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-2 control-label">发送结果</label>
+                                <label class="col-sm-2 control-label">发送结果</label>
 
-                                <div class="col-sm-10">
-                                    <input type="text" name="task_ips" class="form-control"
-                                           placeholder="仅支持192.168.1.1-192.168.1.254和192.168.1.1格式" required>
+                                <div class="col-sm-4">
+                                    {% if setting_data["status"]=="on" %}
+
+                                    <input style="margin-right: 5px;" name="status" type="checkbox" checked>
+                                    {% else %}
+                                    <input style="margin-right: 5px;" name="status" type="checkbox">
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-2 control-label">扫描端口</label>
+                                <label class="col-sm-2 control-label">邮件服务器</label>
 
-                                <div class="col-sm-10">
-                                    <input type="text" name="task_ports" class="form-control" placeholder="仅支持1-65535和80格式" required>
+                                <div class="col-sm-4">
+                                    {% if setting_data["status"]=="on" %}
+                                    <input type="text" name="email_server" class="form-control email_info"
+                                           placeholder="smtp.139.com" value="{{ setting_data['email_server'] }}" >
+                                    {% else %}
+                                    <input type="text" name="email_server" class="form-control email_info"
+                                           placeholder="smtp.139.com" disabled="disabled">
+                                    {% endif %}
                                 </div>
                             </div>
 
                             <div class="form-group ">
-                                <label for="inputPassword3" class="col-sm-2 control-label">循环周期</label>
+                                <label class="col-sm-2 control-label">发件人邮箱</label>
                                 <div class="col-sm-4">
-                                    <input name="cron_time"  type="text" class="form-control"
-                                           placeholder="数字" required>
+                                    {% if setting_data["status"]=="on" %}
+                                    <input name="sender" type="text" class="form-control email_info"
+                                           placeholder="zhangsan@139.com" value="{{ setting_data['sender'] }}" >
+                                    {% else %}
+                                    <input name="sender" type="text" class="form-control email_info"
+                                           placeholder="zhangsan@139.com" disabled="disabled">
+                                    {% endif %}
                                 </div>
-                                <div class="col-sm-6">
 
-                                    <select class="form-control" name="cron_unit">
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">发件人邮箱密码</label>
 
-                                        <option value="hours">小时</option>
-                                        <option value="days">天</option>
-                                        <option value="no">不循环</option>
-                                    </select>
+                                <div class="col-sm-4">
+                                    {% if setting_data["status"]=="on" %}
+                                    <input type="text" name="email_pwd" class="form-control email_info"
+                                           placeholder="123456" value="{{ setting_data['email_pwd'] }}" >
+                                    {% else %}
+                                    <input type="text" name="email_pwd" class="form-control email_info"
+                                           placeholder="123456" disabled="disabled">
+                                    {% endif %}
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">收件人</label>
 
+                                <div class="col-sm-4">
+
+                                    {% if setting_data["status"]=="on" %}
+                                    <input type="text" name="email_address" class="form-control email_info"
+                                           placeholder="test@qq.com" value="{{ setting_data['email_pwd'] }}" >
+                                    {% else %}
+                                    <input type="text" name="email_address" class="form-control email_info"
+                                           placeholder="test@qq.com" disabled="disabled">
+                                    {% endif %}
+
+
+                                </div>
+                            </div>
 
                         </div>
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <!-- /.box-body -->
                         <div class="box-footer">
 
-                            <button type="submit" id ="task_submit" class="btn btn-info pull-right">提交</button>
+                            <button type="submit" id="setting_submit" class="btn btn-info pull-right">提交</button>
                         </div>
                         <!-- /.box-footer -->
                     </form>
@@ -120,6 +158,10 @@
 
 
 {% block script %}
+    {#    <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>#}
+    <script src="../static/plugins/bootstrap-switch/bootstrap-switch.min.js"></script>
+
+
     <script src="static/plugins/messenger/messenger.min.js"></script>
 
 
@@ -131,11 +173,28 @@
     {#    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>#}
     <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
-<script>
-Messenger.options = {
-    extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
-}
-
-</script>
+    <script>
+        Messenger.options = {
+            extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+        }
+        $('[name="status"]').bootstrapSwitch({    //初始化按钮
+            onText: "开启",
+            offText: "关闭",
+            onColor: "success",
+            offColor: "info",
+            size: "small",
+            onSwitchChange: function (event, state) {
+                if (state == true) {
+                    console.log("开启");
+                    $(".email_info").removeAttr("disabled");
+                    $(".email_info").attr("", "");
+                } else {
+                    $(".email_info").attr("disabled", "disabled");
+                    $(".email_info").removeAttr("");
+                    console.log("关闭");
+                }
+            }
+        });
+    </script>
 
 {% endblock %}

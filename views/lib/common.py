@@ -17,8 +17,8 @@ def delete_ip(task_id):
 
 
 def add_ip(task_name, task_ips, task_ports, task_type, cron):
-    mongo = Mongo
-    mongo_task = mongo.coll['tasks']
+
+    mongo_task = Mongo.coll['tasks']
     if mongo_task.find_one({"name": task_name, "task_status": {"$ne": "finish"}}):  # 有没完成的任务就不插入新任务了
         return False
     create_time = datetime.now()

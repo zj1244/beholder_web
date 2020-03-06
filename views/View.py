@@ -27,47 +27,58 @@ def _jinja2_filter_datetime(date):
 
 
 # 设置
-@app.route('/setting')
+@app.route('/setting', methods=['get', 'post'])
 @logincheck
+@csrf.exempt
 def Setting():
-    q = request.args.get("q", "")
-    dataset = []
 
-    if ":" in q:
-        q = q.split(":")
+    if request.method == "POST":
+        form_dict = {
+            "scanning_num": "",
+            "status": "",
+            "email_server": "",
+            "sender": "",
+            "email_pwd": "",
+            "email_address": ""
+        }
+        for k, v in request.form.items():
+            if k in form_dict:
+                form_dict[k] = v
 
-        regx = re.compile(q[1], re.IGNORECASE)
-        if q[0] == "port":
-            # search_result = Mongo.coll['scan_result'].find({"port": q[1]})
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}},
-                 {'$match': {'data.port': int(q[1])}}],
-                allowDiskUse=True)
-        elif q[0] == "server":
-            # search_result = Mongo.coll['scan_result'].find({"service": regx})
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.service': regx}}],
-                allowDiskUse=True)
-        elif q[0] == "ip":
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.ip': regx}}],
-                allowDiskUse=True)
-        elif q[0] == "soft":
-
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}},
-                 {'$match': {'data.version_info': regx}}],
-                allowDiskUse=True)
+        if form_dict["scanning_num"]:
+            try:
+                form_dict["scanning_num"] = int(form_dict["scanning_num"])
+            except:
+                return dumps({"status": "error", "content": "并发数只能是数字"})
         else:
-            return render_template('search.html', q=request.args.get("q", ""))
-        for j in search_result:
-            dataset.append([str(j['data'][0]['ip']), j['data'][0]['port'], str(j['data'][0].get('service', '')),
-                            str(j['data'][0].get('version_info', '')),
-                            str(j['data'][0]['create_time'])])
+            return dumps({"status": "error", "content": "并发数为空"})
+
+        if form_dict["status"] == "on":
+            if form_dict["email_server"] and form_dict["sender"] and form_dict["email_pwd"] and form_dict[
+                "email_address"]:
+                if "@" in form_dict["sender"] and "@" in form_dict["email_address"]:
+                    insert_result = Mongo.coll['setting'].insert_one(form_dict)
+                    if insert_result:
+                        return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
+
+            else:
+                return dumps({"status": "error", "content": "邮件配置不能为空"})
         else:
-            pass
-        return render_template('search.html', q=request.args.get("q", ""), dataset=dataset)
-    return render_template('search.html', q=request.args.get("q", ""))
+            insert_result = Mongo.coll['setting'].insert_one(
+                {"status": form_dict["status"], "scanning_num": form_dict["scanning_num"]})
+            if insert_result:
+                return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
+
+        return dumps({"status": "error", "content": "添加任务失败"})
+    else:
+
+    # mongo_task.update_one({"_id": insert_result.inserted_id},
+    #                       {"$set": {"task_status": "running"}})
+        setting_data={}
+        if Mongo.coll['setting'].count():
+            setting_data=Mongo.coll["setting"].find_one()
+
+        return render_template('setting.html',setting_data=setting_data)
 
 
 # 搜索页
