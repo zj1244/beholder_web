@@ -11,7 +11,7 @@ from lib.Login import logincheck
 
 from . import app, Mongo, scheduler, csrf
 
-from  views.lib.common import add_ip, delete_ip, is_number
+from views.lib.common import add_ip, delete_ip, is_number
 import re
 
 reload(sys)
@@ -31,7 +31,6 @@ def _jinja2_filter_datetime(date):
 @logincheck
 @csrf.exempt
 def Setting():
-
     if request.method == "POST":
         form_dict = {
             "scanning_num": "",
@@ -41,10 +40,10 @@ def Setting():
             "email_pwd": "",
             "email_address": ""
         }
+
         for k, v in request.form.items():
             if k in form_dict:
                 form_dict[k] = v
-
         if form_dict["scanning_num"]:
             try:
                 form_dict["scanning_num"] = int(form_dict["scanning_num"])
@@ -57,28 +56,36 @@ def Setting():
             if form_dict["email_server"] and form_dict["sender"] and form_dict["email_pwd"] and form_dict[
                 "email_address"]:
                 if "@" in form_dict["sender"] and "@" in form_dict["email_address"]:
-                    insert_result = Mongo.coll['setting'].insert_one(form_dict)
+
+                    if Mongo.coll["setting"] == 0:
+                        insert_result = Mongo.coll['setting'].insert_one(form_dict)
+                    else:
+                        insert_result = Mongo.coll['setting'].update_one({}, {"$set": form_dict})
                     if insert_result:
                         return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
             else:
                 return dumps({"status": "error", "content": "邮件配置不能为空"})
         else:
-            insert_result = Mongo.coll['setting'].insert_one(
-                {"status": form_dict["status"], "scanning_num": form_dict["scanning_num"]})
+
+            if Mongo.coll["setting"] == 0:
+                insert_result = Mongo.coll['setting'].insert_one(
+                    {"status": "off", "scanning_num": form_dict["scanning_num"]})
+            else:
+                Mongo.coll["setting"].delete_one({})
+                insert_result = Mongo.coll['setting'].insert_one(
+                    {"status": "off", "scanning_num": form_dict["scanning_num"]})
             if insert_result:
                 return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
         return dumps({"status": "error", "content": "添加任务失败"})
     else:
 
-    # mongo_task.update_one({"_id": insert_result.inserted_id},
-    #                       {"$set": {"task_status": "running"}})
-        setting_data={}
+        setting_data = {}
         if Mongo.coll['setting'].count():
-            setting_data=Mongo.coll["setting"].find_one()
+            setting_data = Mongo.coll["setting"].find_one()
 
-        return render_template('setting.html',setting_data=setting_data)
+        return render_template('setting.html', setting_data=setting_data)
 
 
 # 搜索页
