@@ -11,13 +11,14 @@ from views import redis_queue
 
 
 def get_white_ip():
-    white_ip=[]
+    white_ip_list = []
     setting = Mongo.coll["setting"].find_one({})
     if setting:
-        for ip in setting["white_ip"]:
-            white_ip+=format_ip(ip)
+        white_ip=setting.get("white_ip", "")
+        for ip in white_ip:
+            white_ip_list += format_ip(ip)
 
-    return white_ip
+    return white_ip_list
 
 
 def format_ip(ip_range):
@@ -51,7 +52,7 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron):
              "task_status": "ready", "create_time": create_time,
              "task_type": task_type, "cron": cron})
         nmapscan_key = "scan_" + str(insert_result.inserted_id)
-        white_ip=get_white_ip()
+        white_ip = get_white_ip()
         for ip in ips:
             if ip not in white_ip:
                 sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
