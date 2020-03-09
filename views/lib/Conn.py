@@ -7,5 +7,5 @@ class MongoDB(object):
         self.host = host
         self.port = port
         self.database = database
-        self.conn = MongoClient('mongodb://%s:%s@%s:%s/' % (username, password, self.host, self.port), connect=False)
-        self.coll = self.conn[self.database]
+        self._conn = MongoClient('mongodb://%s:%s@%s:%s/' % (username, password, self.host, self.port), connect=False)
+        self.coll = self._conn[self.database]

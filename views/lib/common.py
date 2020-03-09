@@ -10,6 +10,25 @@ from views import Mongo
 from views import redis_queue
 
 
+def get_white_ip():
+    white_ip=[]
+    setting = Mongo.coll["setting"].find_one({})
+    if setting:
+        for ip in setting["white_ip"]:
+            white_ip+=format_ip(ip)
+
+    return white_ip
+
+
+def format_ip(ip_range):
+    if "-" in ip_range:
+        start_ip, end_ip = ip_range.split('-')
+
+        ip_list = get_ip_list(start_ip, end_ip)
+    else:
+        ip_list = [ip_range]
+    return ip_list
+
 
 def delete_ip(task_id):
     redis_queue.del_key("scan_" + str(task_id))
@@ -17,17 +36,11 @@ def delete_ip(task_id):
 
 
 def add_ip(task_name, task_ips, task_ports, task_type, cron):
-
     mongo_task = Mongo.coll['tasks']
     if mongo_task.find_one({"name": task_name, "task_status": {"$ne": "finish"}}):  # 有没完成的任务就不插入新任务了
         return False
     create_time = datetime.now()
-    if "-" in task_ips:
-        split_tmp = task_ips.split('-')
-
-        ips = get_ip_list(split_tmp[0], split_tmp[1])
-    else:
-        ips = [task_ips]
+    ips = format_ip(task_ips)
 
     try:
         Log().info("开始插入数据")
@@ -38,12 +51,11 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron):
              "task_status": "ready", "create_time": create_time,
              "task_type": task_type, "cron": cron})
         nmapscan_key = "scan_" + str(insert_result.inserted_id)
+        white_ip=get_white_ip()
         for ip in ips:
-            # sub_task_list.append(
-            #     {"sub_ip": ip, "sub_port": task_ports,
-            #      "sub_task_status": "ready"})
-            sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
-                             "task_status": "ready"}
+            if ip not in white_ip:
+                sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
+                                 "task_status": "ready"}
 
             pipe.lpush(nmapscan_key, dict2str(sub_task_dict))
 

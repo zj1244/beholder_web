@@ -24,7 +24,13 @@ def _jinja2_filter_datetime(date):
         return date.strftime("%Y-%m-%d %H:%M:%S")
     else:
         return ""
+@app.template_filter('list2str')
+def _jinja2_filter_list2str(list_param):
+    if isinstance(list_param,basestring):
 
+        return list_param
+    else:
+        return ",".join(list_param)
 
 # 设置
 @app.route('/setting', methods=['get', 'post'])
@@ -34,7 +40,6 @@ def Setting():
     if request.method == "POST":
         form_dict = {
             "scanning_num": "",
-            "status": "",
             "email_server": "",
             "sender": "",
             "email_pwd": "",
@@ -44,6 +49,7 @@ def Setting():
         for k, v in request.form.items():
             if k in form_dict:
                 form_dict[k] = v
+        form_dict["mail_enable"] = request.form.get("status")
         if form_dict["scanning_num"]:
             try:
                 form_dict["scanning_num"] = int(form_dict["scanning_num"])
@@ -52,10 +58,12 @@ def Setting():
         else:
             return dumps({"status": "error", "content": "并发数为空"})
 
-        if form_dict["status"] == "on":
+        if form_dict["mail_enable"] == "on":
             if form_dict["email_server"] and form_dict["sender"] and form_dict["email_pwd"] and form_dict[
                 "email_address"]:
                 if "@" in form_dict["sender"] and "@" in form_dict["email_address"]:
+                    if "," in form_dict["email_address"]:
+                        form_dict["email_address"] = form_dict["email_address"].split(",")
 
                     if Mongo.coll["setting"] == 0:
                         insert_result = Mongo.coll['setting'].insert_one(form_dict)
@@ -70,11 +78,11 @@ def Setting():
 
             if Mongo.coll["setting"] == 0:
                 insert_result = Mongo.coll['setting'].insert_one(
-                    {"status": "off", "scanning_num": form_dict["scanning_num"]})
+                    {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
             else:
                 Mongo.coll["setting"].delete_one({})
                 insert_result = Mongo.coll['setting'].insert_one(
-                    {"status": "off", "scanning_num": form_dict["scanning_num"]})
+                    {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
             if insert_result:
                 return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
@@ -233,6 +241,8 @@ def Addtask():
     # 添加任务和拆分任务给flask做
 
     if request.method == "POST":
+        if not Mongo.coll['setting'].find({}).count():
+            return dumps({"status": "error", "content": "请先进行配置"})
         form_dict = {
             "task_name": "",
             "task_ips": "",
@@ -241,7 +251,8 @@ def Addtask():
             "cron_unit": ""
         }
         for k, v in request.form.items():
-            form_dict[k] = v
+            if k in form_dict:
+                form_dict[k] = v
 
         if form_dict["task_name"]:
             if Mongo.coll['tasks'].find({"name": form_dict["task_name"]}).count():

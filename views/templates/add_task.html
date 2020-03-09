@@ -40,14 +40,15 @@
 
                         <div class="box-body">
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">任务名称</label>
+                                <label class="col-sm-2 control-label">任务名称</label>
 
                                 <div class="col-sm-10">
-                                    <input type="text" name="task_name" class="form-control" placeholder="任务名称" required>
+                                    <input type="text" name="task_name" class="form-control" placeholder="任务名称"
+                                           required>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">扫描IP</label>
+                                <label class="col-sm-2 control-label">扫描IP</label>
 
                                 <div class="col-sm-10">
                                     <input type="text" name="task_ips" class="form-control"
@@ -55,17 +56,18 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">扫描端口</label>
+                                <label class="col-sm-2 control-label">扫描端口</label>
 
                                 <div class="col-sm-10">
-                                    <input type="text" name="task_ports" class="form-control" placeholder="仅支持1-65535和80格式" required>
+                                    <input type="text" name="task_ports" class="form-control"
+                                           placeholder="仅支持1-65535和80格式" required>
                                 </div>
                             </div>
 
                             <div class="form-group ">
                                 <label class="col-sm-2 control-label">循环周期</label>
                                 <div class="col-sm-4">
-                                    <input name="cron_time"  type="text" class="form-control"
+                                    <input name="cron_time" type="text" class="form-control"
                                            placeholder="数字" required>
                                 </div>
                                 <div class="col-sm-6">
@@ -79,13 +81,22 @@
                                 </div>
                             </div>
 
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IP白名单</label>
 
+                                <div class="col-sm-10">
+                                    <textarea rows="20" class="col-sm-12" name="white_ip"
+                                              placeholder="排除扫描的IP，一行一个，如：&#13;&#10;192.168.1.123&#13;&#10;192.168.1.200-192.168.2.123"></textarea>
+
+
+                                </div>
+                            </div>
                         </div>
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <!-- /.box-body -->
                         <div class="box-footer">
 
-                            <button type="submit" id ="task_submit" class="btn btn-info pull-right">提交</button>
+                            <button type="submit" id="task_submit" class="btn btn-info pull-right">提交</button>
                         </div>
                         <!-- /.box-footer -->
                     </form>
@@ -131,11 +142,11 @@
     {#    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>#}
     <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
-<script>
-Messenger.options = {
-    extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
-}
+    <script>
+        Messenger.options = {
+            extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+        }
 
-</script>
+    </script>
 
 {% endblock %}

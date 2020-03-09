@@ -72,7 +72,7 @@ class Log(object):
 if __name__ == '__main__':
     my_log = Log()  #
     if not subprocess.mswindows and sys.stdout.isatty():
-        Log().info("dddddd")
+
 
         my_log.info("1")
         my_log.warning("2")

@@ -43,47 +43,47 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">扫描并发数</label>
 
-                                <div class="col-sm-4">
+                                <div class="col-sm-5">
                                     <input type="text" name="scanning_num" class="form-control" placeholder="扫描并发数"
                                            value="{{ setting_data['scanning_num'] }}"
-                                           >
+                                    >
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">发送结果</label>
 
-                                <div class="col-sm-4">
-                                    {% if setting_data["status"]=="on" %}
+                                <div class="col-sm-5">
+                                    {% if setting_data["mail_enable"]=="on" %}
 
-                                    <input style="margin-right: 5px;" name="status" type="checkbox" checked>
+                                        <input style="margin-right: 5px;" name="status" type="checkbox" checked>
                                     {% else %}
-                                    <input style="margin-right: 5px;" name="status" type="checkbox">
+                                        <input style="margin-right: 5px;" name="status" type="checkbox">
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">邮件服务器</label>
 
-                                <div class="col-sm-4">
-                                    {% if setting_data["status"]=="on" %}
-                                    <input type="text" name="email_server" class="form-control email_info"
-                                           placeholder="smtp.139.com" value="{{ setting_data['email_server'] }}" >
+                                <div class="col-sm-5">
+                                    {% if setting_data["mail_enable"]=="on" %}
+                                        <input type="text" name="email_server" class="form-control email_info"
+                                               placeholder="smtp.139.com" value="{{ setting_data['email_server'] }}">
                                     {% else %}
-                                    <input type="text" name="email_server" class="form-control email_info"
-                                           placeholder="smtp.139.com" disabled="disabled">
+                                        <input type="text" name="email_server" class="form-control email_info"
+                                               placeholder="smtp.139.com" disabled="disabled">
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="form-group ">
                                 <label class="col-sm-2 control-label">发件人邮箱</label>
-                                <div class="col-sm-4">
-                                    {% if setting_data["status"]=="on" %}
-                                    <input name="sender" type="text" class="form-control email_info"
-                                           placeholder="zhangsan@139.com" value="{{ setting_data['sender'] }}" >
+                                <div class="col-sm-5">
+                                    {% if setting_data["mail_enable"]=="on" %}
+                                        <input name="sender" type="text" class="form-control email_info"
+                                               placeholder="zhangsan@139.com" value="{{ setting_data['sender'] }}">
                                     {% else %}
-                                    <input name="sender" type="text" class="form-control email_info"
-                                           placeholder="zhangsan@139.com" disabled="disabled">
+                                        <input name="sender" type="text" class="form-control email_info"
+                                               placeholder="zhangsan@139.com" disabled="disabled">
                                     {% endif %}
                                 </div>
 
@@ -91,27 +91,28 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">发件人邮箱密码</label>
 
-                                <div class="col-sm-4">
-                                    {% if setting_data["status"]=="on" %}
-                                    <input type="text" name="email_pwd" class="form-control email_info"
-                                           placeholder="123456" value="{{ setting_data['email_pwd'] }}" >
+                                <div class="col-sm-5">
+                                    {% if setting_data["mail_enable"]=="on" %}
+                                        <input type="text" name="email_pwd" class="form-control email_info"
+                                               placeholder="123456" value="{{ setting_data['email_pwd'] }}">
                                     {% else %}
-                                    <input type="text" name="email_pwd" class="form-control email_info"
-                                           placeholder="123456" disabled="disabled">
+                                        <input type="text" name="email_pwd" class="form-control email_info"
+                                               placeholder="123456" disabled="disabled">
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">收件人</label>
 
-                                <div class="col-sm-4">
+                                <div class="col-sm-5">
 
-                                    {% if setting_data["status"]=="on" %}
-                                    <input type="text" name="email_address" class="form-control email_info"
-                                           placeholder="test@qq.com" value="{{ setting_data['email_pwd'] }}" >
+                                    {% if setting_data["mail_enable"]=="on" %}
+                                        <input type="text" name="email_address" class="form-control email_info"
+                                               placeholder="多个收件人请用逗号分开，如：a@qq.com,b@163.com"
+                                               value="{{ setting_data['email_address'] | list2str }} ">
                                     {% else %}
-                                    <input type="text" name="email_address" class="form-control email_info"
-                                           placeholder="test@qq.com" disabled="disabled">
+                                        <input type="text" name="email_address" class="form-control email_info"
+                                               placeholder="多个收件人请用逗号分开，如：a@qq.com,b@163.com" disabled="disabled">
                                     {% endif %}
 
 
@@ -182,7 +183,7 @@
             offText: "关闭",
             onColor: "success",
             offColor: "info",
-            size: "small",
+
             onSwitchChange: function (event, state) {
                 if (state == true) {
                     console.log("开启");
