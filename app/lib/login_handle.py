@@ -2,7 +2,7 @@
 
 from functools import wraps
 from flask import session,url_for, redirect
-from loghandle import *
+from log_handle import *
 
 def logincheck(f):
     @wraps(f)
@@ -12,11 +12,11 @@ def logincheck(f):
                 if session['login'] == 'loginsuccess':
                     return f(*args, **kwargs)
                 else:
-                    return redirect(url_for('Login'))
+                    return redirect(url_for('login_handle'))
 
             else:
 
-                return redirect(url_for('Login'))
+                return redirect(url_for('login_handle'))
         except Exception, e:
             Log().exception("error")
             return redirect(url_for('Error'))

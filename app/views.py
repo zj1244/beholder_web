@@ -2,16 +2,18 @@
 
 import json
 import os, sys
-from lib.loghandle import Log
+from lib.log_handle import Log
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
-from lib.Login import logincheck
+
+
+from lib.login_handle import logincheck
 
 from . import app, Mongo, scheduler, csrf
 
-from views.lib.common import add_ip, delete_ip, is_number, is_ip
+from app.lib.common import add_ip, delete_ip, is_number, is_ip
 import re
 
 reload(sys)
@@ -295,14 +297,14 @@ def Addtask():
             if task_type:
                 form_dict["cron_time"] = float(form_dict["cron_time"])
                 if form_dict["cron_unit"] == "days":
-                    job = scheduler.add_job(func="views.lib.common:add_ip", id=form_dict["task_name"],
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
                                             args=(
                                                 form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
                                                 task_type, cron),
                                             trigger="interval",
                                             days=form_dict["cron_time"], replace_existing=True)
                 else:
-                    job = scheduler.add_job(func="views.lib.common:add_ip", id=form_dict["task_name"],
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
                                             args=(
                                                 form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
                                                 task_type, cron),
@@ -364,14 +366,14 @@ def Edittask():
         if task_type:
             form_dict["cron_time"] = float(form_dict["cron_time"])
             if form_dict["cron_unit"] == "days":
-                job = scheduler.add_job(func="views.lib.common:add_ip", id=form_dict["task_name"],
+                job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
                                         args=(
                                             form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
                                             task_type, cron),
                                         trigger="interval",
                                         days=form_dict["cron_time"], replace_existing=True)
             else:
-                job = scheduler.add_job(func="views.lib.common:add_ip", id=form_dict["task_name"],
+                job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
                                         args=(
                                             form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
                                             task_type, cron),
@@ -546,7 +548,7 @@ def DeleteTask():
 
 
 @app.route('/login', methods=['get', 'post'])
-def Login():
+def login_handle():
     if request.method == 'GET':
         return render_template('login.html')
     else:
@@ -556,14 +558,14 @@ def Login():
             session['login'] = 'loginsuccess'
             return redirect(url_for('Index'))
         else:
-            return redirect(url_for('Login'))
+            return redirect(url_for('login_handle'))
 
 
 @app.route('/logout')
 # @logincheck
 def LoginOut():
     session['login'] = ''
-    return redirect(url_for('Login'))
+    return redirect(url_for('login_handle'))
 
 
 # @app.route('/404')

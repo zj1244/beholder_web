@@ -4,8 +4,8 @@ from flask import Flask
 from flask_apscheduler import APScheduler
 from flask_wtf.csrf import CSRFProtect
 from Config import ProductionConfig
-from views.lib import Conn
-from views.lib.pyredis import Pyredis
+from app.lib import mongo
+from app.lib.pyredis import Pyredis
 
 import os
 
@@ -17,7 +17,7 @@ app.config.from_object(ProductionConfig)
 csrf = CSRFProtect()
 csrf.init_app(app)
 
-Mongo = Conn.MongoDB(app.config.get('MONGO_IP'), app.config.get('MONGO_PORT'), app.config.get('MONGO_DB_NAME'),
+Mongo = mongo.MongoDB(app.config.get('MONGO_IP'), app.config.get('MONGO_PORT'), app.config.get('MONGO_DB_NAME'),
                      app.config.get('MONGO_USER'), app.config.get('MONGO_PWD'))
 
 redis_queue = Pyredis(hostname=app.config.get("REDIS_IP", ""), port=app.config.get("REDIS_PORT", ""),

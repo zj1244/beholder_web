@@ -1,7 +1,7 @@
 
 
-from views.View import app, scheduler
-from views.lib.loghandle import Log
+from app.views import app, scheduler
+from app.lib.log_handle import Log
 
 if __name__ == '__main__':
 

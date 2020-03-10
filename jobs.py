@@ -8,7 +8,7 @@ from apscheduler.jobstores.mongodb import MongoDBJobStore
 from flask import request
 import os
 import time
-from views.lib.loghandle import Log
+from app.lib.log_handle import Log
 app = Flask(__name__)
 scheduler = APScheduler()
 

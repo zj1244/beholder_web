@@ -4,10 +4,10 @@ import json, struct, socket
 import re
 from datetime import datetime
 
-from loghandle import Log
+from log_handle import Log
 
-from views import Mongo
-from views import redis_queue
+from app import Mongo
+from app import redis_queue
 
 
 def get_white_ip(white_ip):
