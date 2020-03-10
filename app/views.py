@@ -7,7 +7,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
-
+from app.lib.validate import Validate
 
 from lib.login_handle import logincheck
 
@@ -240,80 +240,40 @@ def Diffresult():
 @logincheck
 @csrf.exempt
 def Addtask():
-    # task_name=12111111111111111111&task_ips=123&task_ports=1212&cron_time=55&cron_unit=hours
-    ips = []
-
     # 添加任务和拆分任务给flask做
 
     if request.method == "POST":
-        if not Mongo.coll['setting'].find({}).count():
-            return dumps({"status": "error", "content": "请先进行配置"})
-        form_dict = {
-            "task_name": "",
-            "task_ips": "",
-            "task_ports": "",
-            "cron_time": "",
-            "cron_unit": "",
-            "white_ip": ""
-        }
-        for k, v in request.form.items():
-            if k in form_dict:
-                form_dict[k] = v
 
-        if form_dict["task_name"]:
-            if Mongo.coll['tasks'].find({"name": form_dict["task_name"]}).count():
-                return dumps({"status": "error", "content": "任务名已存在"})
-        else:
-            return dumps({"status": "error", "content": "任务名为空"})
-
-        form_dict["white_ip"] = form_dict["white_ip"].split("\r\n")
-        if form_dict["white_ip"]:
-            for ip_line in form_dict["white_ip"]:
-                if is_ip(ip_line)==False and  ip_line!="":
-                    return dumps({"status": "error", "content": "错误的IP"})
-
-        if not is_ip(form_dict["task_ips"]):
-            return dumps({"status": "error", "content": "错误的IP"})
-
-        if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", form_dict["task_ports"]):
-            return dumps({"status": "error", "content": "错误的端口"})
-
-        if form_dict["cron_unit"] in ["hours", "days", "no"]:
-            if form_dict["cron_unit"] in ["hours", "days"]:
-
-                if not form_dict["cron_time"]:
-                    return dumps({"status": "error", "content": "非法时间"})
-                elif not is_number(form_dict["cron_time"]):
-                    return dumps({"status": "error", "content": "非法时间"})
-                else:
-                    task_type = 1
-            else:
+        form = Validate(**request.form)
+        validate_result = form.check()
+        if validate_result["status"]:
+            if form.cron_unit == "no":
                 task_type = 0
-        else:
-            return dumps({"status": "error", "content": "非法时间单位"})
+            else:
+                task_type = 1
 
-        cron = form_dict["cron_time"] + " " + form_dict["cron_unit"]
-        if add_ip(form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"], task_type, cron):
-            if task_type:
-                form_dict["cron_time"] = float(form_dict["cron_time"])
-                if form_dict["cron_unit"] == "days":
-                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
-                                            args=(
-                                                form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
-                                                task_type, cron),
-                                            trigger="interval",
-                                            days=form_dict["cron_time"], replace_existing=True)
-                else:
-                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
-                                            args=(
-                                                form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
-                                                task_type, cron),
-                                            trigger="interval",
-                                            hours=form_dict["cron_time"], replace_existing=True)
+            cron = " ".join([form.cron_time, form.cron_unit])
+            if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron,form.white_ip):
+                if task_type:
+                    form.cron_time = float(form.cron_time)
+                    if form.cron_unit == "days":
+                        job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                                args=(
+                                                    form.task_name, form.task_ips, form.task_ports,
+                                                    task_type, cron,form.white_ip),
+                                                trigger="interval",
+                                                days=form.cron_time, replace_existing=True)
+                    else:
+                        job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                                args=(
+                                                    form.task_name, form.task_ips, form.task_ports,
+                                                    task_type, cron,form.white_ip),
+                                                trigger="interval",
+                                                hours=form.cron_time, replace_existing=True)
 
-            return dumps({"status": "success", "content": "添加任务成功", "redirect": "/add_task"})
-        else:
-            return dumps({"status": "error", "content": "添加任务失败"})
+                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/add_task"})
+            else:
+                return dumps({"status": "error", "content": "添加任务失败"})
 
 
     else:

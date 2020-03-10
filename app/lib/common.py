@@ -12,19 +12,21 @@ from app import redis_queue
 
 def get_white_ip(white_ip):
     white_ip_list = []
-    setting = Mongo.coll["setting"].find_one({})
-    if setting:
-        white_ip = setting.get("white_ip", "")
+    white_ip=white_ip.strip()
+    if white_ip:
+        white_ip = white_ip.split("\r\n")
         for ip in white_ip:
             white_ip_list += format_ip(ip)
 
     return white_ip_list
+
 
 def is_ip(ip):
     patt = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
     if not re.search(patt, ip):
         return False
     return True
+
 
 def format_ip(ip_range):
     if "-" in ip_range:
@@ -51,17 +53,18 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
     try:
         Log().info("开始插入数据")
         pipe = redis_queue.pipe()
-        # sub_task_list = []
+
         insert_result = mongo_task.insert_one(
             {"name": task_name, "ip": task_ips, "port": task_ports, "diff_result": {"diff": 0},
              "task_status": "ready", "create_time": create_time,
              "task_type": task_type, "cron": cron})
         nmapscan_key = "scan_" + str(insert_result.inserted_id)
-        white_ip = get_white_ip()
+        white_ip = get_white_ip(white_ip)
+        ips = set(ips) - set(white_ip)
+        print list(ips).sort()
         for ip in ips:
-            if ip not in white_ip:
-                sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
-                                 "task_status": "ready"}
+            sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
+                             "task_status": "ready"}
 
             pipe.lpush(nmapscan_key, dict2str(sub_task_dict))
 
