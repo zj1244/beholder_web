@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json, struct, socket
-
+import re
 from datetime import datetime
 
 from loghandle import Log
@@ -10,16 +10,21 @@ from views import Mongo
 from views import redis_queue
 
 
-def get_white_ip():
+def get_white_ip(white_ip):
     white_ip_list = []
     setting = Mongo.coll["setting"].find_one({})
     if setting:
-        white_ip=setting.get("white_ip", "")
+        white_ip = setting.get("white_ip", "")
         for ip in white_ip:
             white_ip_list += format_ip(ip)
 
     return white_ip_list
 
+def is_ip(ip):
+    patt = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+    if not re.search(patt, ip):
+        return False
+    return True
 
 def format_ip(ip_range):
     if "-" in ip_range:
@@ -36,7 +41,7 @@ def delete_ip(task_id):
     redis_queue.zremrangebyscore("ack_scan_" + str(task_id), "-INF", "+INF")
 
 
-def add_ip(task_name, task_ips, task_ports, task_type, cron):
+def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
     mongo_task = Mongo.coll['tasks']
     if mongo_task.find_one({"name": task_name, "task_status": {"$ne": "finish"}}):  # 有没完成的任务就不插入新任务了
         return False

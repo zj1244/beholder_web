@@ -4,6 +4,10 @@ from pymongo import MongoClient
 
 class MongoDB(object):
     def __init__(self, host='localhost', port=27017, database='', username='', password=''):
+
+
+
+
         self.host = host
         self.port = port
         self.database = database

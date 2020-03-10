@@ -11,7 +11,7 @@ from lib.Login import logincheck
 
 from . import app, Mongo, scheduler, csrf
 
-from views.lib.common import add_ip, delete_ip, is_number
+from views.lib.common import add_ip, delete_ip, is_number, is_ip
 import re
 
 reload(sys)
@@ -24,13 +24,16 @@ def _jinja2_filter_datetime(date):
         return date.strftime("%Y-%m-%d %H:%M:%S")
     else:
         return ""
+
+
 @app.template_filter('list2str')
 def _jinja2_filter_list2str(list_param):
-    if isinstance(list_param,basestring):
+    if isinstance(list_param, basestring):
 
         return list_param
     else:
         return ",".join(list_param)
+
 
 # 设置
 @app.route('/setting', methods=['get', 'post'])
@@ -248,7 +251,8 @@ def Addtask():
             "task_ips": "",
             "task_ports": "",
             "cron_time": "",
-            "cron_unit": ""
+            "cron_unit": "",
+            "white_ip": ""
         }
         for k, v in request.form.items():
             if k in form_dict:
@@ -259,8 +263,14 @@ def Addtask():
                 return dumps({"status": "error", "content": "任务名已存在"})
         else:
             return dumps({"status": "error", "content": "任务名为空"})
-        patt = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
-        if not re.search(patt, form_dict["task_ips"]):
+
+        form_dict["white_ip"] = form_dict["white_ip"].split("\r\n")
+        if form_dict["white_ip"]:
+            for ip_line in form_dict["white_ip"]:
+                if is_ip(ip_line)==False and  ip_line!="":
+                    return dumps({"status": "error", "content": "错误的IP"})
+
+        if not is_ip(form_dict["task_ips"]):
             return dumps({"status": "error", "content": "错误的IP"})
 
         if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", form_dict["task_ports"]):
