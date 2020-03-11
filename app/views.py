@@ -7,7 +7,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
-from app.lib.validate import Addtask_Validate
+from app.lib.validate import TaskValidate
 
 from lib.login_handle import logincheck
 
@@ -244,36 +244,38 @@ def Addtask():
 
     if request.method == "POST":
 
-        form = Addtask_Validate(**request.form)
-        validate_result = form.check()
-        if validate_result["status"]:
-            if form.cron_unit == "no":
+        form = TaskValidate(**request.form)
+        validate_result = form.check("add_task")
+
+        if validate_result["status"] == "success":
+            if form.job_unit == "no":
                 task_type = 0
             else:
                 task_type = 1
 
-            cron = " ".join([form.cron_time, form.cron_unit])
-            if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron,form.white_ip):
+            cron = " ".join([form.job_time, form.job_unit])
+            if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron, form.white_ip):
                 if task_type:
-                    form.cron_time = float(form.cron_time)
-                    if form.cron_unit == "days":
+                    form.job_time = float(form.job_time)
+                    if form.job_unit == "days":
                         job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
                                                 args=(
                                                     form.task_name, form.task_ips, form.task_ports,
-                                                    task_type, cron,form.white_ip),
+                                                    task_type, cron, form.white_ip),
                                                 trigger="interval",
-                                                days=form.cron_time, replace_existing=True)
+                                                days=form.job_time, replace_existing=True)
                     else:
                         job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
                                                 args=(
                                                     form.task_name, form.task_ips, form.task_ports,
-                                                    task_type, cron,form.white_ip),
+                                                    task_type, cron, form.white_ip),
                                                 trigger="interval",
-                                                hours=form.cron_time, replace_existing=True)
+                                                hours=form.job_time, replace_existing=True)
 
                 return dumps({"status": "success", "content": "添加任务成功", "redirect": "/add_task"})
             else:
                 return dumps({"status": "error", "content": "添加任务失败"})
+        return dumps(validate_result)
 
 
     else:
@@ -286,63 +288,37 @@ def Addtask():
 def Edittask():
     if request.method == "POST":
 
-        form_dict = {
-            "task_name": "",
-            "task_ips": "",
-            "task_ports": "",
-            "cron_time": "",
-            "cron_unit": ""
-        }
-        for k, v in request.form.items():
-            form_dict[k] = v
+        form = TaskValidate(**request.form)
+        validate_result = form.check("edit_task")
 
-        if form_dict["task_name"]:
-            if not Mongo.coll['tasks'].find({"name": form_dict["task_name"]}).count():
-                return dumps({"status": "error", "content": "不存在此任务"})
-        else:
-            return dumps({"status": "error", "content": "任务名为空"})
-        patt = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
-        if not re.search(patt, form_dict["task_ips"]):
-            return dumps({"status": "error", "content": "错误的IP"})
-
-        if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", form_dict["task_ports"]):
-            return dumps({"status": "error", "content": "错误的端口"})
-
-        if form_dict["cron_unit"] in ["hours", "days", "no"]:
-            if form_dict["cron_unit"] in ["hours", "days"]:
-
-                if not form_dict["cron_time"]:
-                    return dumps({"status": "error", "content": "非法时间"})
-                elif not is_number(form_dict["cron_time"]):
-                    return dumps({"status": "error", "content": "非法时间"})
-                else:
-                    task_type = 1
-            else:
+        if validate_result["status"] == "success":
+            if form.job_unit == "no":
                 task_type = 0
-        else:
-            return dumps({"status": "error", "content": "非法时间单位"})
-
-        cron = form_dict["cron_time"] + " " + form_dict["cron_unit"]
-        if task_type:
-            form_dict["cron_time"] = float(form_dict["cron_time"])
-            if form_dict["cron_unit"] == "days":
-                job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
-                                        args=(
-                                            form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
-                                            task_type, cron),
-                                        trigger="interval",
-                                        days=form_dict["cron_time"], replace_existing=True)
             else:
-                job = scheduler.add_job(func="app.lib.common:add_ip", id=form_dict["task_name"],
-                                        args=(
-                                            form_dict["task_name"], form_dict["task_ips"], form_dict["task_ports"],
-                                            task_type, cron),
-                                        trigger="interval",
-                                        hours=form_dict["cron_time"], replace_existing=True)
-        else:
-            return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/edit_task"})
-        return dumps({"status": "success", "content": "更新任务成功", "redirect": "/"})
+                task_type = 1
 
+            cron = " ".join([form.job_time, form.job_unit])
+
+            if task_type:
+                form.job_time = float(form.job_time)
+                if form.job_unit == "days":
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                            args=(
+                                                form.task_name, form.task_ips, form.task_ports,
+                                                task_type, cron, form.white_ip),
+                                            trigger="interval",
+                                            days=form.job_time, replace_existing=True)
+                else:
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                            args=(
+                                                form.task_name, form.task_ips, form.task_ports,
+                                                task_type, cron, form.white_ip),
+                                            trigger="interval",
+                                            hours=form.job_time, replace_existing=True)
+            else:
+                return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/edit_task"})
+            return dumps({"status": "success", "content": "更新任务成功", "redirect": "/"})
+        return dumps(validate_result)
 
 
     else:
@@ -352,15 +328,21 @@ def Edittask():
             "task_ips": "",
             "task_ports": "",
             "task_type": "",
-            "cron_time": "",
-            "cron_unit": ""
+            "job_time": "",
+            "job_unit": "",
+            "white_ip":""
         }
-        if scheduler.get_job(id=task_name):
+        job = scheduler.get_job(id=task_name)
+        if job:
             task_args["task_name"], task_args["task_ips"], task_args["task_ports"], task_args[
-                "task_type"], cron = scheduler.get_job(id=task_name).args
-            task_args["cron_time"], task_args["cron_unit"] = cron.split(" ")
+                "task_type"], cron ,task_args["white_ip"]= job.args
 
-        # task_args["task_name"]
+            task_args["job_time"], task_args["job_unit"] = cron.split(" ")
+            task_args["white_ip"]=task_args["white_ip"].strip()
+            # if task_args["white_ip"]:
+            #     task_args["white_ip"]=task_args["white_ip"].split("\r\n")
+            # else:
+            #     task_args["white_ip"] =[]
 
         return render_template('edit_task.html', task_args=task_args)
 

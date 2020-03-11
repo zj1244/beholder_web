@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}添加任务{% endblock %}
+{% block title %}编辑任务{% endblock %}
 {% block css %}
 
     <!-- Theme style -->
@@ -40,7 +40,7 @@
 
                         <div class="box-body">
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">任务名称</label>
+                                <label class="col-sm-2 control-label">任务名称</label>
 
                                 <div class="col-sm-10">
                                     <input type="text" name="task_name" class="form-control" placeholder="任务名称"
@@ -48,7 +48,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">扫描IP</label>
+                                <label class="col-sm-2 control-label">扫描IP</label>
 
                                 <div class="col-sm-10">
                                     <input type="text" name="task_ips" class="form-control"
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label  class="col-sm-2 control-label">扫描端口</label>
+                                <label class="col-sm-2 control-label">扫描端口</label>
 
                                 <div class="col-sm-10">
                                     <input type="text" name="task_ports" class="form-control"
@@ -66,33 +66,49 @@
                             </div>
 
                             <div class="form-group ">
-                                <label  class="col-sm-2 control-label">循环周期</label>
+                                <label class="col-sm-2 control-label">循环周期</label>
                                 <div class="col-sm-4">
-                                    <input name="cron_time" type="text" class="form-control"
-                                           placeholder="数字" value="{{ task_args['cron_time'] }}" required>
+                                    <input name="job_time" type="text" class="form-control"
+                                           placeholder="数字" value="{{ task_args['job_time'] }}" required>
                                 </div>
                                 <div class="col-sm-6">
 
-                                    <select class="form-control" name="cron_unit">
-                                        {% if task_args["cron_unit"]=="hours" %}
+                                    <select class="form-control" name="job_unit">
+                                        {% if task_args["job_unit"]=="hours" %}
                                             <option value="hours" selected="selected">小时</option>
                                         {% else %}
                                             <option value="hours">小时</option>
                                         {% endif %}
 
-                                        {% if task_args["cron_unit"]=="days" %}
+                                        {% if task_args["job_unit"]=="days" %}
                                             <option value="days" selected="selected">天</option>
                                         {% else %}
                                             <option value="days">天</option>
                                         {% endif %}
 
-                                        {% if task_args["cron_unit"]=="no" %}
+                                        {% if task_args["job_unit"]=="no" %}
                                             <option value="no" selected="selected">不循环</option>
                                         {% else %}
                                             <option value="no">不循环</option>
                                         {% endif %}
 
                                     </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IP白名单</label>
+
+                                <div class="col-sm-10">
+                                    {% if task_args["white_ip"] %}
+
+                                        <textarea rows="20" class="col-sm-12" name="white_ip">{{task_args["white_ip"]}}</textarea>
+                                    {% else %}
+
+                                        <textarea rows="20" class="col-sm-12" name="white_ip"
+                                                  placeholder="排除扫描的IP，一行一个，如：&#13;&#10;192.168.1.123&#13;&#10;192.168.1.200-192.168.2.123"></textarea>
+                                    {% endif %}
+
                                 </div>
                             </div>
 

@@ -61,7 +61,7 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
         nmapscan_key = "scan_" + str(insert_result.inserted_id)
         white_ip = get_white_ip(white_ip)
         ips = set(ips) - set(white_ip)
-        print list(ips).sort()
+
         for ip in ips:
             sub_task_dict = {"base_task_id": str(insert_result.inserted_id), "ip": ip, "port": task_ports,
                              "task_status": "ready"}

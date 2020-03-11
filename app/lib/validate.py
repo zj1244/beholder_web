@@ -5,39 +5,60 @@ from app.lib.common import is_ip, is_number
 from json import dumps
 
 
-class Validate(object):
+class TaskValidate(object):
     def __init__(self, **kwargs):
-
-        # self.task_name = "".join(kwargs.get("task_name", ""))
-        # self.task_ips = "".join(kwargs.get("task_ips", ""))
-        # self.task_ports = "".join(kwargs.get("task_ports", ""))
-        #
-        # self.cron_time = "".join(kwargs.get("cron_time", ""))
-        # self.cron_unit = "".join(kwargs.get("cron_unit", ""))
-        #
-        # self.white_ip = "".join(kwargs.get("white_ip", ""))
+        self.task_name = "".join(kwargs.get("task_name", ""))
+        self.task_ips = "".join(kwargs.get("task_ips", ""))
+        self.task_ports = "".join(kwargs.get("task_ports", ""))
+        self.job_time = "".join(kwargs.get("job_time", ""))
+        self.job_unit = "".join(kwargs.get("job_unit", ""))
+        self.white_ip = "".join(kwargs.get("white_ip", ""))
         self.result = {}
 
     def check_ip(self):
-        pass
+        if not is_ip(self.task_ips):
+            self.result = {"status": "error", "content": "错误的IP"}
+        return self.result
 
     def check_port(self):
-        pass
-
-    def check_task_name(self):
-        pass
-
-    def check_setting(self):
-        pass
+        if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", self.task_ports):
+            self.result = {"status": "error", "content": "错误的端口"}
+        return self.result
 
     def check_job_time(self):
+        if self.job_unit in ["hours", "days"]:
 
-        pass
+            if not self.job_time:
+                self.result = {"status": "error", "content": "非法时间"}
+            elif not is_number(self.job_time):
+                self.result = {"status": "error", "content": "非法时间"}
+        return self.result
 
-    def check_time_unit(self):
-        pass
+    def check_setting(self):
+        if not Mongo.coll['setting'].find({}).count():
+            self.result = {"status": "error", "content": "请先进行配置"}
+        return self.result
 
-    def check(self):
+    def check_task_name(self):
+        if self.task_name:
+            if Mongo.coll['tasks'].find({"name": self.task_name}).count():
+                self.result = {"status": "error", "content": "任务名已存在"}
+        return self.result
+
+    def check_job_unit(self):
+        if self.job_unit not in ["hours", "days", "no"]:
+            self.result = {"status": "error", "content": "非法时间单位"}
+        return self.result
+
+    def check_white_ip(self):
+        white_ip = self.white_ip.split("\r\n")
+        if white_ip:
+            for ip_line in white_ip:
+                if is_ip(ip_line) == False and ip_line != "":
+                    self.result = {"status": "error", "content": "错误的IP"}
+        return self.result
+
+    def check(self,form):
 
         if self.check_ip():
             return self.result
@@ -51,74 +72,17 @@ class Validate(object):
         if self.check_setting():
             return self.result
 
-        if self.check_time_unit():
+        if self.check_job_unit():
             return self.result
+        if form=="add_task":
+            if self.check_task_name():
+                return self.result
 
-        if self.check_task_name():
+        if self.check_white_ip():
             return self.result
 
         return {"status": "success", "content": "验证通过"}
 
 
-class Addtask_Validate(Validate):
-    def __init__(self, **kwargs):
-
-        super(Addtask_Validate, self).__init__(self)
-
-        self.task_name = "".join(kwargs.get("task_name", ""))
-        self.task_ips = "".join(kwargs.get("task_ips", ""))
-        self.task_ports = "".join(kwargs.get("task_ports", ""))
-
-        self.cron_time = "".join(kwargs.get("cron_time", ""))
-        self.cron_unit = "".join(kwargs.get("cron_unit", ""))
-
-        self.white_ip = "".join(kwargs.get("white_ip", ""))
-
-    def check_ip(self):
-        if not is_ip(self.task_ips):
-            self.result = {"status": "error", "content": "错误的IP"}
-        return self.result
-
-    def check_port(self):
-        if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", self.task_ports):
-            self.result = {"status": "error", "content": "错误的端口"}
-        return self.result
-
-    def check(self):
-        if not Mongo.coll['setting'].find({}).count():
-            return {"status": "error", "content": "请先进行配置"}
-
-        if self.task_name:
-            if Mongo.coll['tasks'].find({"name": self.task_name}).count():
-                return {"status": "error", "content": "任务名已存在"}
-        else:
-            return {"status": "error", "content": "任务名为空"}
-
-        white_ip = self.white_ip.split("\r\n")
-        if white_ip:
-            for ip_line in white_ip:
-                if is_ip(ip_line) == False and ip_line != "":
-                    return {"status": "error", "content": "错误的IP"}
-
-        if not is_ip(self.task_ips):
-            return {"status": "error", "content": "错误的IP"}
-
-        if not re.search(r"^\d{1,5}$|^\d{1,5}-\d{1,5}$|\d{1,5},\d{1,5}", self.task_ports):
-            return {"status": "error", "content": "错误的端口"}
-
-        if self.cron_unit in ["hours", "days"]:
-
-            if not self.cron_time:
-                return {"status": "error", "content": "非法时间"}
-            elif not is_number(self.cron_time):
-                return {"status": "error", "content": "非法时间"}
-
-        if self.cron_unit not in ["hours", "days", "no"]:
-            return {"status": "error", "content": "非法时间单位"}
-
-        return {"status": "success", "content": "验证通过"}
 
 
-if __name__ == '__main__':
-    x = Validate()
-    print x.methods()

@@ -95,13 +95,13 @@ $("button#delete_task").click(function () {
 });
 
 
-$("select[name='cron_unit']").click(function () {
+$("select[name='job_unit']").click(function () {
     if ($(this).val() == "no") {
-        $("input[name='cron_time']").attr("disabled", true);
+        $("input[name='job_time']").attr("disabled", true);
 
     }
     else {
-        $("input[name='cron_time']").attr("disabled", false);
+        $("input[name='job_time']").attr("disabled", false);
     }
 
 
