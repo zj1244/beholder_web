@@ -13,7 +13,7 @@ app = Flask(__name__)
 scheduler = APScheduler()
 
 
-class Config(object):
+class config(object):
     JOBS = []
     SCHEDULER_JOBSTORES = {
         'default': MongoDBJobStore(database='apscheduler', collection='jobs',host='mongodb://%s:%s@%s:%s/' % ('root', 'chjsec_', '192.168.47.146', '27017'))
@@ -88,7 +88,7 @@ def test():
 
 if __name__ == '__main__':
     # app = Flask(__name__)
-    app.config.from_object(Config())
+    app.config.from_object(config())
 
     # it is also possible to enable the API directly
     # scheduler.api_enabled = True

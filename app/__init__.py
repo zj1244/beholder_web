@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import Flask
 from flask_apscheduler import APScheduler
 from flask_wtf.csrf import CSRFProtect
-from Config import ProductionConfig
+from config import ProductionConfig
 from app.lib import mongo
 from app.lib.pyredis import Pyredis
 

@@ -188,10 +188,10 @@ _Ubuntu 14.04_
 
 ### 3. 修改配置
 
-修改系统数据库配置脚本 `Config.py`:
+修改系统数据库配置脚本 `config.py`:
 
 ```python
-class Config(object):
+class config(object):
     ACCOUNT = 'admin'
     PASSWORD = 'xunfeng321'
 ```
@@ -199,7 +199,7 @@ class Config(object):
 修改 `PASSWORD` 字段内的密码, 设置成你的密码。
 
 ```python
-class ProductionConfig(Config):
+class ProductionConfig(config):
     DB = '127.0.0.1'
     PORT = 27017
     DBUSERNAME = 'scan'

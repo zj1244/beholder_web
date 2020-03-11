@@ -57,10 +57,10 @@ $ mongorestore.exe -h 127.0.0.1 --port 65521 -d xunfeng db
 
 ### 3. 修改配置
 
-修改系统数据库配置脚本 `Config.py`:
+修改系统数据库配置脚本 `config.py`:
 
 ```
-class Config(object):
+class config(object):
     ACCOUNT = 'admin'
     PASSWORD = 'xunfeng321'
 ```
@@ -68,7 +68,7 @@ class Config(object):
 修改 `PASSWORD` 字段内的密码, 设置成你的密码。
 
 ```
-class ProductionConfig(Config):
+class ProductionConfig(config):
     DB = '127.0.0.1'
     PORT = 65521
     DBUSERNAME = 'scan'

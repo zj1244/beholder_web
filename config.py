@@ -4,14 +4,14 @@ from dotenv import find_dotenv, load_dotenv
 import os
 
 
-class Config(object):
+class BaseConfig(object):
     ACCOUNT = 'admin'
     PASSWORD = 'admin'
     WTF_CSRF_ENABLED = False
     WTF_CSRF_CHECK_DEFAULT = False
 
 
-class ProductionConfig(Config):
+class ProductionConfig(BaseConfig):
     load_dotenv(find_dotenv())
 
     MONGO_IP = os.getenv("MONGO_IP")

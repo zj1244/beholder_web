@@ -7,7 +7,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
-from app.lib.validate import Validate
+from app.lib.validate import Addtask_Validate
 
 from lib.login_handle import logincheck
 
@@ -244,7 +244,7 @@ def Addtask():
 
     if request.method == "POST":
 
-        form = Validate(**request.form)
+        form = Addtask_Validate(**request.form)
         validate_result = form.check()
         if validate_result["status"]:
             if form.cron_unit == "no":
