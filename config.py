@@ -5,15 +5,15 @@ import os
 
 
 class BaseConfig(object):
-    ACCOUNT = 'admin'
-    PASSWORD = 'admin'
+
     WTF_CSRF_ENABLED = False
     WTF_CSRF_CHECK_DEFAULT = False
 
 
 class ProductionConfig(BaseConfig):
     load_dotenv(find_dotenv())
-
+    ACCOUNT = os.getenv("ACCOUNT")
+    PASSWORD = os.getenv("PASSWORD")
     MONGO_IP = os.getenv("MONGO_IP")
     MONGO_PORT = int(os.getenv("MONGO_PORT"))
     MONGO_USER = os.getenv("MONGO_USER")

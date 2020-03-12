@@ -1,4 +1,5 @@
-# -*- coding: UTF-8 -*-
+#!/usr/bin/env python
+# coding: utf-8
 
 import json
 import os, sys
@@ -16,8 +17,7 @@ from . import app, Mongo, scheduler, csrf
 from app.lib.common import add_ip, delete_ip, is_number, is_ip
 import re
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+import pipr
 
 
 @app.template_filter('strftime')

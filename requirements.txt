@@ -1,8 +1,7 @@
-six>=1.6.0
-Flask
-Flask-WTF
-pymongo
-paramiko==1.15.3
-packaging
-appdirs
-gunicorn
+pymongo==3.7.2
+APScheduler==3.6.3
+Flask_WTF==0.14.2
+Flask_APScheduler==1.11.0
+Flask==0.12.2
+python-dotenv==0.12.0
+redis==3.4.1
