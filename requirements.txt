@@ -1,3 +1,4 @@
+werkzeug==0.16.1
 pymongo==3.7.2
 APScheduler==3.6.3
 Flask_WTF==0.14.2

@@ -2,26 +2,20 @@
 # coding: utf-8
 
 import json
-import os, sys
 from lib.log_handle import Log
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
 from app.lib.validate import TaskValidate
-
 from lib.login_handle import logincheck
-
 from . import app, Mongo, scheduler, csrf
-
-from app.lib.common import add_ip, delete_ip, is_number, is_ip
+from app.lib.common import add_ip, delete_ip
 import re
-
-import pipr
 
 
 @app.template_filter('strftime')
-def _jinja2_filter_datetime(date):
+def _jinja2_filter_strftime(date):
     if date:
         return date.strftime("%Y-%m-%d %H:%M:%S")
     else:

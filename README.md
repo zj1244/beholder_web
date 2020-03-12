@@ -1,6 +1,6 @@
 # beholder 
 
-**beholder**是一款简洁监控端口变化的系统，由 `beholder_scanner`， `beholder_web`  两个部分组成。**当前项目为 `beholder_web`部分**。
+**beholder**是一款简洁而小巧的系统，主要作用是监控端口变化。由 `beholder_scanner`， `beholder_web`  两个部分组成。**当前项目为 `beholder_web`部分**。
 
  `beholder_scanner`和`beholder_web`可以部署在一台机器上，也可以分开部署在不同的机器上。 
 
@@ -29,29 +29,11 @@
 # pip install -r requirements.txt
 ```
 
-### 2. 安装nmap（已安装跳过）
+### 2. 修改配置文件
 
+首先将`.env.sample`复制一份重命名为`.env`
 ```
-# rpm -vhU https://nmap.org/dist/nmap-7.80-1.x86_64.rpm
-# nmap -V //输出nmap版本号为成功
-```
-
-### 3. 添加mongodb认证
-
-在mongodb服务器上添加db用户，这里的`scan`和`123456`需要更换为你的mongodb的账户和密码。
-
-```
-# mongo
-> use admin
-> db.createUser({user:'scan',pwd:'123456', roles:[{role:'readWriteAnyDatabase', db:'admin'}]})
-> exit
-```
-
-### 4. 修改配置文件
-
-首先将`config.py.sample`复制一份重命名为`config.py`
-```
-# cp scanner/config.py.sample scanner/config.py
+# cp .env.sample .env
 
 ```
 
