@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import re
 import json
 from lib.log_handle import Log
 from bson.json_util import dumps
@@ -11,7 +12,7 @@ from app.lib.validate import TaskValidate
 from lib.login_handle import logincheck
 from . import app, Mongo, scheduler, csrf
 from app.lib.common import add_ip, delete_ip
-import re
+
 
 
 @app.template_filter('strftime')

@@ -1,8 +1,14 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+import os
+import sys
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from dotenv import find_dotenv, load_dotenv
 
-import os
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class BaseConfig(object):
 
@@ -25,7 +31,8 @@ class ProductionConfig(BaseConfig):
         REDIS_PORT = os.getenv("REDIS_PORT")
         REDIS_PWD = os.getenv("REDIS_PWD")
     except:
-        print u"请检查是否把config.env.sample复制成config.env"
+        print "请检查是否把config.env.sample复制成config.env"
+        os._exit(0)
 
     JOBS = []
     SCHEDULER_JOBSTORES = {
