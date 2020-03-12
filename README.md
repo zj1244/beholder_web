@@ -15,7 +15,7 @@
 ## 安装指南（以下操作均在centos 7上进行）
 
 [![Python 2.7](https://img.shields.io/badge/python-2.7-yellow.svg)](https://www.python.org/) 
-[![Mongodb 3.x](https://img.shields.io/badge/mongodb-3.x-green.svg)](https://www.mongodb.com/download-center?jmp=nav)
+[![Mongodb 3.x](https://img.shields.io/badge/mongodb-3.x-red.svg)](https://www.mongodb.com/download-center?jmp=nav)
 [![Redis 3.x](https://img.shields.io/badge/redis-3.x-green)](https://redis.io/)
 
 **依赖：项目运行依赖于mongodb和redis，所以需准备好mongodb和redis，mongodb和redis安装请参考：**
@@ -31,9 +31,9 @@
 
 ### 2. 修改配置文件
 
-首先将`.env.sample`复制一份重命名为`.env`
+首先将`config.env.sample`复制一份重命名为`config.env`
 ```
-# cp .env.sample .env
+# cp config.env.sample config.env
 
 ```
 

@@ -11,7 +11,7 @@ class BaseConfig(object):
 
 
 class ProductionConfig(BaseConfig):
-    load_dotenv(find_dotenv())
+    load_dotenv(find_dotenv("config.env"))
     ACCOUNT = os.getenv("ACCOUNT")
     PASSWORD = os.getenv("PASSWORD")
     MONGO_IP = os.getenv("MONGO_IP")
