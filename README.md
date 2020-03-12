@@ -1,8 +1,10 @@
 # beholder 
 
-**beholder**是一款简洁而小巧的系统，主要作用是监控端口变化。由 `beholder_scanner`， `beholder_web`  两个部分组成。**当前项目为 `beholder_web`部分**。
+## 介绍
 
- `beholder_scanner`和`beholder_web`可以部署在一台机器上，也可以分开部署在不同的机器上。 
+**beholder**是一款简洁而小巧的系统，主要作用是通过监控端口变化来发现企业内部的信息孤岛。例如：运维或开发新部署了一台机器未通知安全。
+
+系统由 `beholder_scanner`、 `beholder_web`  两个部分组成。这两个部分可以部署在一台机器上，也可以分开部署在不同的机器上。**当前项目为 `beholder_web`部分**。
 
 * **beholder_scanner**：对IP进行端口扫描、比较端口变化，可部署多个beholder_scanner来组成集群加快扫描速度。
 * **beholder_web**：提供前端界面展示。
@@ -34,46 +36,29 @@
 首先将`config.env.sample`复制一份重命名为`config.env`
 ```
 # cp config.env.sample config.env
-
 ```
 
 然后按照自己的要求修改配置：
 
 ```
-# coding=utf-8
+# username and password
+ACCOUNT="admin"
+PASSWORD="admin"
 
-# 1是ping发现主机，0是通过发送tcp syn包到指定端口来发现主机
-FIND_HOST = 1
+# mongodb
+MONGO_IP = '192.168.47.168'
+MONGO_PORT = 27018
+MONGO_USER = 'scan'
+MONGO_PWD = '123456'
+MONGO_DB_NAME = 'portscan'
 
-# redis配置，需按照实际情况修改
-REDIS_IP = "192.168.1.1"
-REDIS_PORT = "6379"
+# redis
+REDIS_IP = "192.168.47.168"
+REDIS_PORT = "6378"
 REDIS_PWD = "pwd"
-VULSCAN_KEY = ""  # 用于后续扫描的队列，没后续扫描则保留为空
-
-# db配置，需按照实际情况修改
-MONGO_IP = "192.168.1.1"
-MONGO_PORT = 27017
-MONGO_USER = "scan"
-MONGO_PWD = "123456"
-# 可以保持默认
-MONGO_DB_NAME = "portscan"
-MONGO_TASKS_COLL_NAME = "tasks"
-MONGO_RESULT_COLL_NAME = "scan_result"
-MONGO_SETTING_COLL_NAME = "setting"
-
-
 ```
 
-### 5. 导入数据库
-
-进入`db`文件夹，执行如下命令：
-
-```
-# mongorestore -u scan -p 123456 --authenticationDatabase admin -d portscan .
-```
-
-### 6. 启动
+### 3. 启动
 
 在程序目录下执行如下命令：
 
