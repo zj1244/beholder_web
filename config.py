@@ -11,18 +11,21 @@ class BaseConfig(object):
 
 
 class ProductionConfig(BaseConfig):
-    load_dotenv(find_dotenv("config.env"))
-    ACCOUNT = os.getenv("ACCOUNT")
-    PASSWORD = os.getenv("PASSWORD")
-    MONGO_IP = os.getenv("MONGO_IP")
-    MONGO_PORT = int(os.getenv("MONGO_PORT"))
-    MONGO_USER = os.getenv("MONGO_USER")
-    MONGO_PWD = os.getenv("MONGO_PWD")
-    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
+    try:
+        load_dotenv(find_dotenv("config.env"))
+        ACCOUNT = os.getenv("ACCOUNT")
+        PASSWORD = os.getenv("PASSWORD")
+        MONGO_IP = os.getenv("MONGO_IP")
+        MONGO_PORT = int(os.getenv("MONGO_PORT"))
+        MONGO_USER = os.getenv("MONGO_USER")
+        MONGO_PWD = os.getenv("MONGO_PWD")
+        MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
 
-    REDIS_IP = os.getenv("REDIS_IP")
-    REDIS_PORT = os.getenv("REDIS_PORT")
-    REDIS_PWD = os.getenv("REDIS_PWD")
+        REDIS_IP = os.getenv("REDIS_IP")
+        REDIS_PORT = os.getenv("REDIS_PORT")
+        REDIS_PWD = os.getenv("REDIS_PWD")
+    except:
+        print u"请检查是否把config.env.sample复制成config.env"
 
     JOBS = []
     SCHEDULER_JOBSTORES = {
