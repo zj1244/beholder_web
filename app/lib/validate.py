@@ -42,7 +42,7 @@ class TaskValidate(object):
     def check_task_name(self):
         if self.task_name:
             if Mongo.coll['tasks'].find({"name": self.task_name}).count():
-                self.result = {"status": "error", "content": "任务名已存在"}
+                self.result = {"status": "error", "content": "任务名称不能重复，请修改"}
         return self.result
 
     def check_job_unit(self):

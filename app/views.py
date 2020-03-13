@@ -14,7 +14,6 @@ from . import app, Mongo, scheduler, csrf
 from app.lib.common import add_ip, delete_ip
 
 
-
 @app.template_filter('strftime')
 def _jinja2_filter_strftime(date):
     if date:
@@ -244,13 +243,13 @@ def Addtask():
 
         if validate_result["status"] == "success":
             if form.job_unit == "no":
-                task_type = 0
+                task_type = "normal"
             else:
-                task_type = 1
+                task_type = "loop"
 
             cron = " ".join([form.job_time, form.job_unit])
             if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron, form.white_ip):
-                if task_type:
+                if task_type == "loop":
                     form.job_time = float(form.job_time)
                     if form.job_unit == "days":
                         job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
@@ -288,13 +287,13 @@ def Edittask():
 
         if validate_result["status"] == "success":
             if form.job_unit == "no":
-                task_type = 0
+                task_type = "normal"
             else:
-                task_type = 1
+                task_type = "loop"
 
             cron = " ".join([form.job_time, form.job_unit])
 
-            if task_type:
+            if task_type == "loop":
                 form.job_time = float(form.job_time)
                 if form.job_unit == "days":
                     job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
@@ -325,15 +324,15 @@ def Edittask():
             "task_type": "",
             "job_time": "",
             "job_unit": "",
-            "white_ip":""
+            "white_ip": ""
         }
         job = scheduler.get_job(id=task_name)
         if job:
             task_args["task_name"], task_args["task_ips"], task_args["task_ports"], task_args[
-                "task_type"], cron ,task_args["white_ip"]= job.args
+                "task_type"], cron, task_args["white_ip"] = job.args
 
             task_args["job_time"], task_args["job_unit"] = cron.split(" ")
-            task_args["white_ip"]=task_args["white_ip"].strip()
+            task_args["white_ip"] = task_args["white_ip"].strip()
             # if task_args["white_ip"]:
             #     task_args["white_ip"]=task_args["white_ip"].split("\r\n")
             # else:

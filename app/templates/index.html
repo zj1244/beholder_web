@@ -57,7 +57,7 @@
                             {% for i in result %}
                                 <tr>
                                     <td><b>{{ i['name'] }}</b></td>
-                                    {% if i['task_type']==1 %}
+                                    {% if i['task_type']=="loop" %}
                                         <td>循环扫描</td>
                                     {% else %}
                                         <td>常规扫描</td>
@@ -67,7 +67,7 @@
                                     <td>{{ i['length'] }}</td>
                                     <td>{{ i['create_time'] | strftime }}</td>
 
-                                    {% if i['task_type']==1 %}
+                                    {% if i['task_type']=="loop" %}
                                         <td>{{ i['cron'] | replace("days","天") | replace("hours","小时") }}</td>
                                     {% else %}
                                         <td>无</td>
@@ -87,7 +87,7 @@
                                     {% if i['next_run_time']!="无" %}
                                         <td><span class="label label-success">循环中</span></td>
                                     {% else %}
-                                        {% if i['task_type']==1 %}
+                                        {% if i['task_type']=="loop" %}
                                             <td><span class="label label-danger">已暂停</span></td>
                                         {% else %}
                                             <td><span class="label label-primary">无</span></td>
@@ -124,7 +124,7 @@
                                                         onclick="pause_scheduler('{{ i['name'] }}')">暂停循环
                                                 </button>
                                             {% else %}
-                                                {% if i['task_type']==1 %}
+                                                {% if i['task_type']=="loop" %}
                                                     <button type="button" class="btn btn-info btn-xs"
                                                             onclick="resume_scheduler('{{ i['name'] }}')">启动循环
                                                     </button>

@@ -55,7 +55,7 @@
                             </tr>
                             <tr>
                                 <td>{{ task_info.task_name }}</td>
-                                {% if task_info.task_type==1 %}
+                                {% if task_info.task_type=="loop" %}
                                     <td>循环扫描</td>
                                 {% else %}
                                     <td>常规扫描</td>
@@ -64,12 +64,12 @@
                                 <td>{{ task_info.port }}</td>
                                 <td>{{ task_info.scan_count }}</td>
                                 <td>{{ task_info.create_time }}</td>
-                                {% if task_info.task_type==1 %}
+                                {% if task_info.task_type=="loop" %}
                                     <td>{{ task_info.cron | replace("days","天") | replace("hours","小时") }}</td>
                                 {% else %}
                                     <td>无</td>
                                 {% endif %}
-                                {% if task_info.task_type==1 %}
+                                {% if task_info.task_type=="loop" %}
                                     <td>{{ task_info.next_run_time }}</td>
                                 {% else %}
                                     <td>无</td>
