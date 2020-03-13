@@ -31,7 +31,6 @@ def _jinja2_filter_list2str(list_param):
         return ",".join(list_param)
 
 
-# 设置
 @app.route('/setting', methods=['get', 'post'])
 @logincheck
 @csrf.exempt
@@ -64,10 +63,10 @@ def Setting():
                     if "," in form_dict["email_address"]:
                         form_dict["email_address"] = form_dict["email_address"].split(",")
 
-                    if Mongo.coll["setting"] == 0:
-                        insert_result = Mongo.coll['setting'].insert_one(form_dict)
-                    else:
+                    if Mongo.coll["setting"].count():
                         insert_result = Mongo.coll['setting'].update_one({}, {"$set": form_dict})
+                    else:
+                        insert_result = Mongo.coll['setting'].insert_one(form_dict)
                     if insert_result:
                         return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
@@ -75,11 +74,10 @@ def Setting():
                 return dumps({"status": "error", "content": "邮件配置不能为空"})
         else:
 
-            if Mongo.coll["setting"] == 0:
-                insert_result = Mongo.coll['setting'].insert_one(
-                    {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
+            if Mongo.coll["setting"].count():
+                insert_result = Mongo.coll['setting'].update_one({}, {
+                    "$set": {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]}})
             else:
-                Mongo.coll["setting"].delete_one({})
                 insert_result = Mongo.coll['setting'].insert_one(
                     {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
             if insert_result:
@@ -95,9 +93,9 @@ def Setting():
         return render_template('setting.html', setting_data=setting_data)
 
 
-# 搜索页
 @app.route('/search')
 @logincheck
+@csrf.exempt
 def Search():
     q = request.args.get("q", "")
     dataset = []
@@ -107,12 +105,12 @@ def Search():
 
         regx = re.compile(q[1], re.IGNORECASE)
         if q[0] == "port":
-            # search_result = Mongo.coll['scan_result'].find({"port": q[1]})
+
             search_result = Mongo.coll['scan_result'].aggregate(
                 [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.port': int(q[1])}}],
                 allowDiskUse=True)
         elif q[0] == "server":
-            # search_result = Mongo.coll['scan_result'].find({"service": regx})
+
             search_result = Mongo.coll['scan_result'].aggregate(
                 [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.service': regx}}],
                 allowDiskUse=True)
@@ -138,6 +136,7 @@ def Search():
 
 @app.route('/total')
 @logincheck
+@csrf.exempt
 def Total():
     task_id = request.args.get("task_id", "")
 
@@ -204,7 +203,6 @@ def Total():
 
 @app.route('/diff_result', methods=['get'])
 @logincheck
-@csrf.exempt
 def Diffresult():
     task_id = request.args.get('task_id', '')
 
@@ -212,24 +210,23 @@ def Diffresult():
     add_ips, add_ports = [], []
     if task_id:
         cursor = Mongo.coll['tasks'].find_one({"_id": ObjectId(task_id)})
-    if cursor and cursor['diff_result']['diff']:
-        resp['title'] = cursor['create_time'].strftime('%Y-%m-%d')
-        if 'add_ips' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ips']) > 0:
-            resp['add_ips'] = cursor['diff_result']['add_ips']
+        if cursor and cursor['diff_result']['diff']:
+            resp['title'] = cursor['create_time'].strftime('%Y-%m-%d')
+            if 'add_ips' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ips']) > 0:
+                resp['add_ips'] = cursor['diff_result']['add_ips']
 
-        if 'add_ports' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ports']) > 0:
+            if 'add_ports' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ports']) > 0:
 
-            for i in cursor['diff_result']['add_ports']:
-                ip = i.split(":")[0]
-                port = i.split(":")[1]
-                c = Mongo.coll['scan_result'].find_one({"ip": ip, "port": int(port)}, sort=[("create_time", -1)])
+                for i in cursor['diff_result']['add_ports']:
+                    ip, port = i.split(":")
 
-                add_ports.append({"ip": i, "service": c['service'], "version_info": c['version_info'].strip()})
-            resp['add_ports'] = add_ports
+                    c = Mongo.coll['scan_result'].find_one({"ip": ip, "port": int(port)}, sort=[("create_time", -1)])
+
+                    add_ports.append({"ip": i, "service": c['service'], "version_info": c['version_info'].strip()})
+                resp['add_ports'] = add_ports
     return json.dumps(resp)
 
 
-# 新增任务
 @app.route('/add_task', methods=['get', 'post'])
 @logincheck
 @csrf.exempt
@@ -333,16 +330,13 @@ def Edittask():
 
             task_args["job_time"], task_args["job_unit"] = cron.split(" ")
             task_args["white_ip"] = task_args["white_ip"].strip()
-            # if task_args["white_ip"]:
-            #     task_args["white_ip"]=task_args["white_ip"].split("\r\n")
-            # else:
-            #     task_args["white_ip"] =[]
 
         return render_template('edit_task.html', task_args=task_args)
 
 
 @app.route('/resume_scheduler')
 @logincheck
+@csrf.exempt
 def Resume_scheduler():
     task_name = request.args.get('task_name', '')
     try:
@@ -356,7 +350,8 @@ def Resume_scheduler():
 
 
 @app.route('/pause_scheduler')
-# @logincheck
+@logincheck
+@csrf.exempt
 def Pause_scheduler():
     task_name = request.args.get('task_name', '')
     try:
@@ -367,26 +362,6 @@ def Pause_scheduler():
         result = {"status": "error", "content": "暂停循环出错"}
 
     return dumps(result)
-
-
-# 任务列表页面
-@app.route('/task')
-@logincheck
-def Task():
-    # page = int(request.args.get('page', '1'))
-    result = []
-    cursor = Mongo.coll['tasks'].aggregate(
-        [{"$sort": {"create_time": -1}}, {"$group": {"_id": "$name"}}])
-    # {"$limit": page_size},
-    # {"$skip": (page - 1) * page_size}])   #.sort('create_time', -1).limit(page_size).skip((page - 1) * page_size)
-    # task_num = len(cursor._CommandCursor__data)
-
-    for i in cursor:
-        result.append(i)
-    if result:
-        return dumps(result)
-    else:
-        return dumps([])
 
 
 @app.route('/')
@@ -429,7 +404,6 @@ def Index():
     return render_template('index.html', result=result)
 
 
-# 任务详情页面
 @app.route('/task_detail')
 @logincheck
 def TaskDetail():
