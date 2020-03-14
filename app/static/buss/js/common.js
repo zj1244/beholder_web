@@ -67,7 +67,7 @@ $(document).ready(function () {
 });
 
 $("button#delete_task").click(function () {
-    // alert("");
+
     var task_name = $(this).attr('name');
 
     swal({
@@ -80,16 +80,43 @@ $("button#delete_task").click(function () {
             cancelButtonText: "取消",
             closeOnConfirm: false
         },
+
+
+
         function () {
-            $.post('/delete_task', {task_name: task_name}, function (e) {
-                if (e == 'success') {
-                    swal("已删除", '', "success");
+
+
+        $.ajax({
+        type: "POST",
+        url: "/delete_task",
+        data: {task_name: task_name},
+        success: function (data) {
+
+            if (data === "success") {
+                swal("已删除", '', "success");
                     $("button[name='" + task_name + "']").parent().parent().parent().remove();
-                }
-                else {
-                    swal("删除失败", '', "error");
-                }
-            })
+
+
+            }
+            else {
+                swal("删除失败", '', "error");
+
+            }
+        }
+    })
+
+
+
+
+            // $.post('/delete_task', {task_name: task_name}, function (e) {
+            //     if (e == 'success') {
+            //         swal("已删除", '', "success");
+            //         $("button[name='" + task_name + "']").parent().parent().parent().remove();
+            //     }
+            //     else {
+            //         swal("删除失败", '', "error");
+            //     }
+            // })
 
         });
 });
@@ -164,7 +191,7 @@ $("a[name='history_scan']").on("click", function () {
             ports_table = $('#ports_table').DataTable({
                 columns: [
                     {title: "新增端口"},
-                    {title: "协议"},
+                    {title: "服务"},
                     {title: "软件信息"}
                 ],
                 retrieve: true,

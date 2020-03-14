@@ -6,14 +6,12 @@ import sys
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from dotenv import find_dotenv, load_dotenv
 
-
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-class BaseConfig(object):
 
-    WTF_CSRF_ENABLED = False
-    WTF_CSRF_CHECK_DEFAULT = False
+class BaseConfig(object):
+    WTF_CSRF_ENABLED = True
 
 
 class ProductionConfig(BaseConfig):
@@ -38,7 +36,7 @@ class ProductionConfig(BaseConfig):
     SCHEDULER_JOBSTORES = {
         'default': MongoDBJobStore(database='apscheduler', collection='beholder_jobs',
                                    host='mongodb://%s:%s@%s:%s/' % (
-                                   MONGO_USER, MONGO_PWD, MONGO_IP, MONGO_PORT))
+                                       MONGO_USER, MONGO_PWD, MONGO_IP, MONGO_PORT))
     }
     SCHEDULER_EXECUTORS = {
         'default': {'type': 'threadpool', 'max_workers': 20}

@@ -33,7 +33,6 @@ def _jinja2_filter_list2str(list_param):
 
 @app.route('/setting', methods=['get', 'post'])
 @logincheck
-@csrf.exempt
 def Setting():
     if request.method == "POST":
         form_dict = {
@@ -203,6 +202,7 @@ def Total():
 
 @app.route('/diff_result', methods=['get'])
 @logincheck
+@csrf.exempt
 def Diffresult():
     task_id = request.args.get('task_id', '')
 
@@ -229,7 +229,6 @@ def Diffresult():
 
 @app.route('/add_task', methods=['get', 'post'])
 @logincheck
-@csrf.exempt
 def Addtask():
     # 添加任务和拆分任务给flask做
 
@@ -275,7 +274,6 @@ def Addtask():
 
 @app.route('/edit_task', methods=['get', 'post'])
 @logincheck
-@csrf.exempt
 def Edittask():
     if request.method == "POST":
 
@@ -366,6 +364,7 @@ def Pause_scheduler():
 
 @app.route('/')
 @logincheck
+@csrf.exempt
 def Index():
     result = []
     next_run_time = u"无"
@@ -406,6 +405,7 @@ def Index():
 
 @app.route('/task_detail')
 @logincheck
+@csrf.exempt
 def TaskDetail():
     task_info = {}
     task_name = request.args.get('task_name', '')
@@ -439,6 +439,7 @@ def TaskDetail():
 
 @app.route('/delete_task', methods=['get', 'post'])
 @logincheck
+@csrf.exempt
 def DeleteTask():
     task_name = request.form.get('task_name', '')
     if task_name:
@@ -472,15 +473,10 @@ def login_handle():
 
 
 @app.route('/logout')
-# @logincheck
+@logincheck
 def LoginOut():
     session['login'] = ''
     return redirect(url_for('login_handle'))
-
-
-# @app.route('/404')
-# def NotFound():
-#     return render_template('404.html')
 
 
 @app.route('/500')

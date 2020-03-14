@@ -14,7 +14,7 @@
 * Linux
 * Windows
 
-## 安装指南（以下操作均在centos 7上进行）
+## 安装指南
 
 [![Python 2.7](https://img.shields.io/badge/python-2.7-yellow.svg)](https://www.python.org/) 
 [![Mongodb 3.x](https://img.shields.io/badge/mongodb-3.x-red.svg)](https://www.mongodb.com/download-center?jmp=nav)
@@ -25,47 +25,9 @@
 * [mongodb安装](./docs/mongodb.md)
 * [redis安装](./docs/redis.md)
 
-### 1. 安装python依赖库
+### [Linux环境下安装指南](./docs/linux.md)
 
-```
-# pip install -r requirements.txt
-```
-
-### 2. 修改配置文件
-
-首先将`config.env.sample`复制一份重命名为`config.env`
-```
-# cp config.env.sample config.env
-```
-
-然后按照自己的要求修改登陆用户名密码、mongodb和redis连接配置：
-
-```
-# username and password
-ACCOUNT="admin"
-PASSWORD="admin"
-
-# mongodb
-MONGO_IP = '192.168.47.168'
-MONGO_PORT = 27018
-MONGO_USER = 'scan'
-MONGO_PWD = '123456'
-MONGO_DB_NAME = 'portscan'
-
-# redis
-REDIS_IP = "192.168.47.168"
-REDIS_PORT = "6378"
-REDIS_PWD = "pwd"
-```
-
-### 3. 启动
-
-在程序目录下执行如下命令：
-
-```
-# python main.py
-```
-
+### [Docker快速安装](./docs/docker.md)
 
 ## 使用手册
 
