@@ -25,9 +25,15 @@
 * [mongodb安装](./docs/mongodb.md)
 * [redis安装](./docs/redis.md)
 
-### [Linux环境下安装指南](./docs/linux.md)
+***
 
-### [Docker快速安装](./docs/docker.md)
+源码部署请参考：
+
+* [Linux环境下安装指南](./docs/linux.md)
+
+Docker下快速部署请参考：
+
+* [Docker快速安装](./docs/docker.md)
 
 ## 使用手册
 
