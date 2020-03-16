@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "8000:8000"
+      - "8000:80"
     restart: always
     environment:
       # 请修改以下redis和mongodb的配置
