@@ -1,7 +1,9 @@
 version: '3'
 services:
-  scanner:
+  web:
     build: .
+    ports:
+      - "8000:8000"
     restart: always
     environment:
       # 请修改以下redis和mongodb的配置
