@@ -6,7 +6,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN set -x \
     && apt-get update \
-    && apt-get install python-pip -y \
+    && apt-get install python-pip python-dev -y \
     && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /opt/beholder_web
 COPY . /opt/beholder_web
