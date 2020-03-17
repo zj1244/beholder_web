@@ -25,7 +25,7 @@
 * [mongodb安装](./docs/mongodb.md)
 * [redis安装](./docs/redis.md)
 
-***
+*** 
 
 源码部署请参考：
 
