@@ -21,7 +21,7 @@ ACCOUNT="admin"
 PASSWORD="admin"
 
 # mongodb
-MONGO_IP = '192.168.1.169'
+MONGO_IP = '192.168.1.168'
 MONGO_PORT = 27019
 MONGO_USER = 'scan'
 MONGO_PWD = '123456'

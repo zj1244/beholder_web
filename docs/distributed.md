@@ -40,7 +40,7 @@ services:
       MONGO_USER: scan
       MONGO_PWD: 123456
 
-# docker-compose up -d -f install_web_and_scanner.yml # 第二步，启动镜像
+# docker-compose -f install_web_and_scanner.yml up -d # 第二步，启动镜像
 ```
 
 **或者**
@@ -50,7 +50,7 @@ services:
 # git clone https://github.com/zj1244/beholder_web.git
 # cd beholder_web
 # vi install_web_and_scanner.yml #需要修改redis和mongodb的配置信息
-# docker-compose up -d -f install_web_and_scanner.yml
+# docker-compose -f install_web_and_scanner.yml up -d
 ```
 
 至此整套程序部署完毕，如果需要部署多个scanner可以参考以下步骤

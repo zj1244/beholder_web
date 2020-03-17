@@ -16,20 +16,22 @@ class BaseConfig(object):
 
 class ProductionConfig(BaseConfig):
     try:
-        load_dotenv(find_dotenv("config.env"))
-        ACCOUNT = os.getenv("ACCOUNT", "admin")
-        PASSWORD = os.getenv("PASSWORD", "admin")
-        MONGO_IP = os.getenv("MONGO_IP", "192.168.47.168")
-        MONGO_PORT = int(os.getenv("MONGO_PORT", 27018))
-        MONGO_USER = os.getenv("MONGO_USER", "scan")
-        MONGO_PWD = os.getenv("MONGO_PWD", "123456")
-        MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "portscan")
+        if not os.getenv("MONGO_IP"):
 
-        REDIS_IP = os.getenv("REDIS_IP", "192.168.47.168")
-        REDIS_PORT = os.getenv("REDIS_PORT", "6378")
-        REDIS_PWD = os.getenv("REDIS_PWD", "pwd")
-    except Exception as e:
-        print e
+            load_dotenv(find_dotenv("config.env"))
+            ACCOUNT = os.getenv("ACCOUNT", "admin")
+            PASSWORD = os.getenv("PASSWORD", "admin")
+
+            MONGO_IP = os.getenv("MONGO_IP", "127.0.0.1")
+            MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+            MONGO_USER = os.getenv("MONGO_USER", "scan")
+            MONGO_PWD = os.getenv("MONGO_PWD", "")
+            MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "portscan")
+
+            REDIS_IP = os.getenv("REDIS_IP", "127.0.0.1")
+            REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+            REDIS_PWD = os.getenv("REDIS_PWD", "")
+    except:
         print "请检查是否把config.env.sample复制成config.env"
         os._exit(0)
 

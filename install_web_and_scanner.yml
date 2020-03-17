@@ -14,6 +14,7 @@ services:
       MONGO_PWD: 123456
   web:
     build: .
+    container_name: beholder_web
     ports:
      - "8000:80"
     restart: always
