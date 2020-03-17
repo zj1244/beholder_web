@@ -34,7 +34,7 @@ class ProductionConfig(BaseConfig):
     REDIS_PWD = os.getenv("REDIS_PWD", "")
 
 
-
+    print MONGO_USER, MONGO_PWD, MONGO_IP, MONGO_PORT
     JOBS = []
     SCHEDULER_JOBSTORES = {
         'default': MongoDBJobStore(database='apscheduler', collection='beholder_jobs',
