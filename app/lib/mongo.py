@@ -8,7 +8,7 @@ class MongoDB(object):
         self.host = host
         self.port = port
         self.database = database
-        # self._conn = MongoClient('mongodb://%s:%s@%s:%s/' % (username, password, self.host, self.port), connect=False)
+
         if username and password:
             self._conn = MongoClient(
                 'mongodb://%s:%s@%s:%s/' % (username, password, self.host, self.port), connect=False)
