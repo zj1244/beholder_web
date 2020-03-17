@@ -15,25 +15,25 @@ class BaseConfig(object):
 
 
 class ProductionConfig(BaseConfig):
-    try:
-        if not os.getenv("MONGO_IP"):
 
-            load_dotenv(find_dotenv("config.env"))
-            ACCOUNT = os.getenv("ACCOUNT", "admin")
-            PASSWORD = os.getenv("PASSWORD", "admin")
+    if not os.getenv("MONGO_IP"):
 
-            MONGO_IP = os.getenv("MONGO_IP", "127.0.0.1")
-            MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
-            MONGO_USER = os.getenv("MONGO_USER", "scan")
-            MONGO_PWD = os.getenv("MONGO_PWD", "")
-            MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "portscan")
+        load_dotenv(find_dotenv("config.env"))
 
-            REDIS_IP = os.getenv("REDIS_IP", "127.0.0.1")
-            REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-            REDIS_PWD = os.getenv("REDIS_PWD", "")
-    except:
-        print "请检查是否把config.env.sample复制成config.env"
-        os._exit(0)
+    ACCOUNT = os.getenv("ACCOUNT", "admin")
+    PASSWORD = os.getenv("PASSWORD", "admin")
+
+    MONGO_IP = os.getenv("MONGO_IP", "127.0.0.1")
+    MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+    MONGO_USER = os.getenv("MONGO_USER", "scan")
+    MONGO_PWD = os.getenv("MONGO_PWD", "")
+    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "portscan")
+
+    REDIS_IP = os.getenv("REDIS_IP", "127.0.0.1")
+    REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+    REDIS_PWD = os.getenv("REDIS_PWD", "")
+
+
 
     JOBS = []
     SCHEDULER_JOBSTORES = {
@@ -49,3 +49,6 @@ class ProductionConfig(BaseConfig):
         'max_instances': 3
     }
     SCHEDULER_API_ENABLED = True
+
+if __name__ == '__main__':
+    ProductionConfig()
