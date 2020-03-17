@@ -19,6 +19,8 @@ services:
     restart: always
     environment:
       # 请修改以下redis和mongodb的配置
+      ACCOUNT: admin
+      PASSWORD: admin
       REDIS_IP: 192.168.47.168
       REDIS_PORT: 6378
       REDIS_PWD: pwd
