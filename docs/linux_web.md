@@ -20,15 +20,15 @@
 ACCOUNT="admin"
 PASSWORD="admin"
 
-# mongodb
-MONGO_IP = '192.168.1.168'
-MONGO_PORT = 27019
-MONGO_USER = 'scan'
-MONGO_PWD = '123456'
-MONGO_DB_NAME = 'portscan'
+# databases
+MONGO_IP = "192.168.47.169"
+MONGO_PORT = 27017
+MONGO_USER = "scan"
+MONGO_PWD = "123456"
+MONGO_DB_NAME = "portscan"
 
 # redis
-REDIS_IP = "192.168.47.168"
+REDIS_IP = "192.168.47.169"
 REDIS_PORT = "6379"
 REDIS_PWD = "pwd"
 ```
