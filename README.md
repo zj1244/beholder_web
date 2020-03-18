@@ -29,7 +29,7 @@
 
 源码部署请参考：
 
-* [Linux环境下安装指南](./docs/linux.md)
+* [Linux环境下安装指南](docs/linux_web.md)
 
 Docker下快速部署请参考：
 
