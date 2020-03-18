@@ -3,6 +3,8 @@
 ### 1. 安装python依赖库
 
 ```
+# git clone https://github.com/zj1244/beholder_web.git
+# cd beholder_web
 # pip install -r requirements.txt
 ```
 

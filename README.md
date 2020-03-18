@@ -20,7 +20,7 @@
 [![Mongodb 3.x](https://img.shields.io/badge/mongodb-3.x-red.svg)](https://www.mongodb.com/download-center?jmp=nav)
 [![Redis 3.x](https://img.shields.io/badge/redis-3.x-green)](https://redis.io/)
 
-**依赖：项目运行依赖于mongodb和redis，所以需准备好mongodb和redis，mongodb和redis安装请参考：**
+**依赖：项目运行依赖于mongodb和redis，所以需准备好mongodb和redis。mongodb和redis安装请参考：**
 
 * [mongodb安装](./docs/mongodb.md)
 * [redis安装](./docs/redis.md)
