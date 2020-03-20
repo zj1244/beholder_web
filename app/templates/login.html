@@ -1,14 +1,15 @@
 <html lang="en" class="">
 <head>
-    <script src="//static.codepen.io/assets/editor/live/console_runner-1df7d3399bdc1f40995a35209755dcfd8c7547da127f6469fd81e5fba982f6af.js"></script>
-    <script src="//static.codepen.io/assets/editor/live/css_reload-5619dc0905a68b2e6298901de54f73cefe4e079f65a75406858d92924b4938bf.js"></script>
+
     <meta charset="UTF-8">
     <meta name="robots" content="noindex">
-    <link rel="shortcut icon" type="image/x-icon"
-          href="//static.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico">
-    <link rel="mask-icon" type=""
-          href="//static.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg"
-          color="#111">
+
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+    <script src="../static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../static/plugins/messenger/messenger.min.js"></script>
 
 
     <style class="cp-pen-styles">html, body {
@@ -188,7 +189,8 @@
     <img class="user-avater" src="static/images/user.png"/>
 
     <div class="box">
-        <form class="signin-form" method="post">
+
+        <form class="signin-form" id="login_form" action="/login" method="POST">
             <div>
                 <input class="form-control form-input" placeholder="用户名" type="text" name="username"/>
             </div>
@@ -196,9 +198,58 @@
                 <input class="form-control form-input" placeholder="密   码" type="password" name="password"/>
             </div>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <input type="submit" class="btn btn-primary btn-submit" value="登&nbsp;&nbsp;录">
+
+            <div>
+
+                <button type="button" id="login_submit" class="btn btn-info pull-right" style="width:356px"
+                        onclick="login()">提交
+                </button>
+            </div>
+
         </form>
     </div>
+
 </div>
 </body>
+
+<script>
+    Messenger.options = {
+        extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+    }
+
+
+    function login() {
+
+        form = $("form#login_form");
+        messenger = Messenger();
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (data) {
+                var response = JSON.parse(data);
+                if (response.status == "success") {
+                    messenger.post({
+                        message: response.content,
+                        type: "success"
+                    });
+                    setTimeout(" window.location.href = '" + response.redirect + "'", 3000);
+
+
+                }
+                else if (response.status == "error")
+
+                    messenger.post({
+                        message: response.content,
+                        type: "error"
+                    })
+            }
+        });
+
+
+    }
+
+
+</script>
+
 </html>

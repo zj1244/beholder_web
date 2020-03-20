@@ -9,7 +9,7 @@ from bson.objectid import ObjectId
 from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
 from app.lib.validate import TaskValidate
-from lib.login_handle import logincheck
+from lib.login_handle import login_check
 from . import app, Mongo, scheduler, csrf
 from app.lib.common import add_ip, delete_ip
 
@@ -32,7 +32,7 @@ def _jinja2_filter_list2str(list_param):
 
 
 @app.route('/setting', methods=['get', 'post'])
-@logincheck
+@login_check
 def Setting():
     if request.method == "POST":
         form_dict = {
@@ -93,7 +93,7 @@ def Setting():
 
 
 @app.route('/search')
-@logincheck
+@login_check
 @csrf.exempt
 def Search():
     q = request.args.get("q", "")
@@ -134,7 +134,7 @@ def Search():
 
 
 @app.route('/total')
-@logincheck
+@login_check
 @csrf.exempt
 def Total():
     task_id = request.args.get("task_id", "")
@@ -201,7 +201,7 @@ def Total():
 
 
 @app.route('/diff_result', methods=['get'])
-@logincheck
+@login_check
 @csrf.exempt
 def Diffresult():
     task_id = request.args.get('task_id', '')
@@ -228,7 +228,7 @@ def Diffresult():
 
 
 @app.route('/add_task', methods=['get', 'post'])
-@logincheck
+@login_check
 def Addtask():
     # 添加任务和拆分任务给flask做
 
@@ -273,7 +273,7 @@ def Addtask():
 
 
 @app.route('/edit_task', methods=['get', 'post'])
-@logincheck
+@login_check
 def Edittask():
     if request.method == "POST":
 
@@ -333,7 +333,7 @@ def Edittask():
 
 
 @app.route('/resume_scheduler')
-@logincheck
+@login_check
 @csrf.exempt
 def Resume_scheduler():
     task_name = request.args.get('task_name', '')
@@ -348,7 +348,7 @@ def Resume_scheduler():
 
 
 @app.route('/pause_scheduler')
-@logincheck
+@login_check
 @csrf.exempt
 def Pause_scheduler():
     task_name = request.args.get('task_name', '')
@@ -363,7 +363,7 @@ def Pause_scheduler():
 
 
 @app.route('/')
-@logincheck
+@login_check
 @csrf.exempt
 def Index():
     result = []
@@ -404,7 +404,7 @@ def Index():
 
 
 @app.route('/task_detail')
-@logincheck
+@login_check
 @csrf.exempt
 def TaskDetail():
     task_info = {}
@@ -438,7 +438,7 @@ def TaskDetail():
 
 
 @app.route('/delete_task', methods=['get', 'post'])
-@logincheck
+@login_check
 @csrf.exempt
 def DeleteTask():
     task_name = request.form.get('task_name', '')
@@ -459,24 +459,24 @@ def DeleteTask():
 
 
 @app.route('/login', methods=['get', 'post'])
-def login_handle():
+def login():
     if request.method == 'GET':
         return render_template('login.html')
     else:
         username = request.form.get('username')
         password = request.form.get('password')
         if username == app.config.get('ACCOUNT') and password == app.config.get('PASSWORD'):
-            session['login'] = 'loginsuccess'
-            return redirect(url_for('Index'))
+            session['login'] = 'login_success'
+            return dumps({"status": "success", "content": "登陆成功", "redirect": url_for("Index")})
         else:
-            return redirect(url_for('login_handle'))
+            return dumps({"status": "error", "content": "密码错误"})
 
 
 @app.route('/logout')
-@logincheck
+@login_check
 def LoginOut():
     session['login'] = ''
-    return redirect(url_for('login_handle'))
+    return redirect(url_for('login'))
 
 
 @app.route('/500')

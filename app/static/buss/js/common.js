@@ -3,7 +3,6 @@ $("#task_submit").click(function () {
 
     form = $("form#addtask_form");
     messenger = Messenger();
-
     $.ajax({
         type: form.attr('method'),
         url: form.attr('action'),
@@ -28,6 +27,8 @@ $("#task_submit").click(function () {
     });
     return false;
 })
+
+
 
 $("#setting_submit").click(function () {
 
