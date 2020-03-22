@@ -192,7 +192,7 @@
 
         <form class="signin-form" id="login_form" action="/login" method="POST">
             <div>
-                <input class="form-control form-input" placeholder="用户名" type="text" name="username"/>
+                <input class="form-control form-input" placeholder="用户名" type="text" name="username" onkeyup=""/>
             </div>
             <div class="" style="margin: 20px 0;">
                 <input class="form-control form-input" placeholder="密   码" type="password" name="password"/>
@@ -217,6 +217,11 @@
         extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
     }
 
+    $("input").keydown(function () {
+        if (event.keyCode == "13") {
+            login();
+        }
+    });
 
     function login() {
 
@@ -233,11 +238,10 @@
                         message: response.content,
                         type: "success"
                     });
-                    setTimeout(" window.location.href = '" + response.redirect + "'", 3000);
+                    setTimeout(" window.location.href = '" + response.redirect + "'", 10);
 
 
-                }
-                else if (response.status == "error")
+                } else if (response.status == "error")
 
                     messenger.post({
                         message: response.content,

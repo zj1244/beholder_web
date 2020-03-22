@@ -26,14 +26,8 @@
 * [redis安装](./docs/redis.md)
 
 *** 
+web端和scanner端的整体部署步骤都集中在[scanner的README](https://github.com/zj1244/beholder_scanner#%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)，这里不再重复。
 
-源码部署请参考：
-
-* [Linux环境下安装指南](docs/linux_web.md)
-
-Docker下快速部署请参考：
-
-* [Docker快速安装](./docs/docker.md)
 
 ## 使用手册
 

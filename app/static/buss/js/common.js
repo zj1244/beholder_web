@@ -17,8 +17,7 @@ $("#task_submit").click(function () {
                 setTimeout(" window.location.href = '" + response.redirect + "'", 3000);
 
 
-            }
-            else if (response.status == "error")
+            } else if (response.status == "error")
                 messenger.post({
                     message: response.content,
                     type: "error"
@@ -27,7 +26,6 @@ $("#task_submit").click(function () {
     });
     return false;
 })
-
 
 
 $("#setting_submit").click(function () {
@@ -50,8 +48,7 @@ $("#setting_submit").click(function () {
                 setTimeout(" window.location.href = '" + response.redirect + "'", 3000);
 
 
-            }
-            else if (response.status == "error")
+            } else if (response.status == "error")
                 messenger.post({
                     message: response.content,
                     type: "error"
@@ -65,6 +62,47 @@ $("#setting_submit").click(function () {
 $(document).ready(function () {
     $("#diff_ports").hide();
     $('#diff_ips').hide();
+});
+
+$("button#delete_node").click(function () {
+
+    var ip = $(this).attr('name');
+
+    swal({
+            title: "确认删除？",
+            text: "将删除节点【" + ip + "】",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            closeOnConfirm: false
+        },
+
+
+        function () {
+
+
+            $.ajax({
+                type: "POST",
+                url: "/delete_node",
+                data: {ip: ip},
+                success: function (data) {
+
+                    if (data === "success") {
+                        swal("已删除", '', "success");
+                        $("button[name='" + ip + "']").parent().parent().parent().remove();
+
+
+                    } else {
+                        swal("删除失败", '', "error");
+
+                    }
+                }
+            })
+
+
+        });
 });
 
 $("button#delete_task").click(function () {
@@ -83,41 +121,27 @@ $("button#delete_task").click(function () {
         },
 
 
-
         function () {
 
 
-        $.ajax({
-        type: "POST",
-        url: "/delete_task",
-        data: {task_name: task_name},
-        success: function (data) {
+            $.ajax({
+                type: "POST",
+                url: "/delete_task",
+                data: {task_name: task_name},
+                success: function (data) {
 
-            if (data === "success") {
-                swal("已删除", '', "success");
-                    $("button[name='" + task_name + "']").parent().parent().parent().remove();
-
-
-            }
-            else {
-                swal("删除失败", '', "error");
-
-            }
-        }
-    })
+                    if (data === "success") {
+                        swal("已删除", '', "success");
+                        $("button[name='" + task_name + "']").parent().parent().parent().remove();
 
 
+                    } else {
+                        swal("删除失败", '', "error");
 
+                    }
+                }
+            })
 
-            // $.post('/delete_task', {task_name: task_name}, function (e) {
-            //     if (e == 'success') {
-            //         swal("已删除", '', "success");
-            //         $("button[name='" + task_name + "']").parent().parent().parent().remove();
-            //     }
-            //     else {
-            //         swal("删除失败", '', "error");
-            //     }
-            // })
 
         });
 });
@@ -127,8 +151,7 @@ $("select[name='job_unit']").click(function () {
     if ($(this).val() == "no") {
         $("input[name='job_time']").attr("disabled", true);
 
-    }
-    else {
+    } else {
         $("input[name='job_time']").attr("disabled", false);
     }
 
@@ -166,8 +189,7 @@ $("a[name='history_scan']").on("click", function () {
                     ports_dataset.push([info['ip'], info['service'], info['version_info']])
                 });
 
-            }
-            else {
+            } else {
                 $("#diff_ports").hide();
             }
 
@@ -182,8 +204,7 @@ $("a[name='history_scan']").on("click", function () {
                     // $('#ips_row').append("<tr><td>" + info + "</td></tr>")
                     ips_dataset.push([info])
                 });
-            }
-            else {
+            } else {
                 $("#diff_ips").hide();
 
             }

@@ -20,6 +20,6 @@ def login_check(f):
                 return redirect(url_for('login'))
         except Exception, e:
             Log().exception("error")
-            return redirect(url_for('Error'))
+            return redirect(url_for('runtime_error'))
 
     return wrapper

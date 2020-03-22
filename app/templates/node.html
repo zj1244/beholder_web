@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}节点{% endblock %}
+{% block css %}
+
+    <!-- Theme style -->
+
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
+    <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            节点
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> 节点</a></li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+
+
+    <section class="content">
+        <div class="row">
+
+            <div class="col-md-12">
+                <div class="box">
+
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table  table-hover"
+                               style="border-left:3px solid blue;border-bottom:1px solid blue" id="index_table">
+                            <thead>
+                            <tr>
+                                <th>节点IP</th>
+                                <th>节点状态</th>
+                                <th>最后在线时间</th>
+                                <th>操作</th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for node_info in result %}
+                                <tr>
+                                    <td><b>{{ node_info["ip"] }}</b></td>
+                                    {% if node_info['status']=="online" %}
+                                        <td>在线</td>
+                                    {% else %}
+                                        <td>离线</td>
+                                    {% endif %}
+                                    <td>{{ node_info['last_time'] | timestamp2str }}</td>
+
+                                    <td>
+                                        <div>
+
+                                            {% if node_info['status']=="online" %}
+
+                                                <button type="button" class="btn btn-info btn-xs" id="delete_node" disabled="disabled"
+                                                        name="{{ node_info['ip'] }}">删除节点
+                                                </button>
+
+                                            {% else %}
+                                                <button type="button" class="btn btn-info btn-xs" id="delete_node"
+                                                        name="{{ node_info['ip'] }}">删除节点
+                                                </button>
+
+                                            {% endif %}
+
+
+                                        </div>
+                                    </td>
+
+
+                                </tr>
+                            {% endfor %}
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+
+    <!-- /.content -->
+
+{% endblock %}
+
+
+
+
+{% block script %}
+    <script src="static/plugins/messenger/messenger.min.js"></script>
+
+
+
+    <!-- AdminLTE App -->
+    <script src="static/dist/js/app.min.js"></script>
+    <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="static/plugins/echarts/echarts.min.js"></script>
+
+    <script>
+        Messenger.options = {
+            extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
+        }
+        messenger = Messenger();
+
+        function pause_scheduler(task_name) {
+            $.getJSON('/pause_scheduler?task_name=' + task_name, function (data) {
+                if (JSON.stringify(data) != '{}') {
+                    if (data.status == "success") {
+                        messenger.post({
+                            message: data.content,
+                            type: "success"
+                        });
+                        setTimeout(" window.location.href = '/'", 1000);
+                    } else if (data.status == "error")
+                        messenger.post({
+                            message: data.content,
+                            type: "error"
+                        })
+                }
+
+            })
+        }
+
+        function resume_scheduler(task_name) {
+            $.getJSON('/resume_scheduler?task_name=' + task_name, function (data) {
+                if (JSON.stringify(data) != '{}') {
+                    if (data.status == "success") {
+                        messenger.post({
+                            message: data.content,
+                            type: "success"
+                        });
+                        setTimeout(" window.location.href = '/'", 1000);
+                    } else if (data.status == "error")
+                        messenger.post({
+                            message: data.content,
+                            type: "error"
+                        })
+                }
+
+            })
+        }
+    </script>
+
+
+
+{% endblock %}

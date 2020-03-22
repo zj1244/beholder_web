@@ -3,6 +3,7 @@
 
 import re
 import json
+import time
 from lib.log_handle import Log
 from bson.json_util import dumps
 from bson.objectid import ObjectId
@@ -10,11 +11,20 @@ from flask import request, render_template, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
 from app.lib.validate import TaskValidate
 from lib.login_handle import login_check
-from . import app, Mongo, scheduler, csrf
-from app.lib.common import add_ip, delete_ip
+from . import app, Mongo, scheduler, csrf, redis_web
+from app.lib.common import add_ip, delete_ip, is_last_task
 
 
-@app.template_filter('strftime')
+@app.template_filter("timestamp2str")
+def _jinja2_filter_timestamp2str(timestamp):
+    if timestamp:
+        time_local = time.localtime(timestamp)
+        return time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+    else:
+        return ""
+
+
+@app.template_filter("strftime")
 def _jinja2_filter_strftime(date):
     if date:
         return date.strftime("%Y-%m-%d %H:%M:%S")
@@ -22,7 +32,7 @@ def _jinja2_filter_strftime(date):
         return ""
 
 
-@app.template_filter('list2str')
+@app.template_filter("list2str")
 def _jinja2_filter_list2str(list_param):
     if isinstance(list_param, basestring):
 
@@ -31,9 +41,43 @@ def _jinja2_filter_list2str(list_param):
         return ",".join(list_param)
 
 
-@app.route('/setting', methods=['get', 'post'])
+@app.route("/node", methods=["get"])
 @login_check
-def Setting():
+def node():
+    if request.method == "GET":
+        result = []
+        node_info = redis_web.hgetall(hash_name="beholder_node")
+
+        for k, v in node_info.items():
+
+            last_time = float(v)
+            if time.time() - last_time > 60 * 5:
+                status = "offline"
+            else:
+                status = "online"
+            result.append({
+                "ip": k,
+                "last_time": last_time,
+                "status": status
+            })
+
+        return render_template("node.html", result=result)
+
+
+@app.route("/delete_node", methods=["post"])
+@login_check
+@csrf.exempt
+def delete_node():
+    ip = request.form.get("ip", "")
+    if redis_web.hdel(hash_name="beholder_node", key=ip):
+        return "success"
+    else:
+        return "fail"
+
+
+@app.route("/setting", methods=["get", "post"])
+@login_check
+def setting():
     if request.method == "POST":
         form_dict = {
             "scanning_num": "",
@@ -63,9 +107,9 @@ def Setting():
                         form_dict["email_address"] = form_dict["email_address"].split(",")
 
                     if Mongo.coll["setting"].count():
-                        insert_result = Mongo.coll['setting'].update_one({}, {"$set": form_dict})
+                        insert_result = Mongo.coll["setting"].update_one({}, {"$set": form_dict})
                     else:
-                        insert_result = Mongo.coll['setting'].insert_one(form_dict)
+                        insert_result = Mongo.coll["setting"].insert_one(form_dict)
                     if insert_result:
                         return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
@@ -74,10 +118,10 @@ def Setting():
         else:
 
             if Mongo.coll["setting"].count():
-                insert_result = Mongo.coll['setting'].update_one({}, {
+                insert_result = Mongo.coll["setting"].update_one({}, {
                     "$set": {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]}})
             else:
-                insert_result = Mongo.coll['setting'].insert_one(
+                insert_result = Mongo.coll["setting"].insert_one(
                     {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
             if insert_result:
                 return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
@@ -86,16 +130,16 @@ def Setting():
     else:
 
         setting_data = {}
-        if Mongo.coll['setting'].count():
+        if Mongo.coll["setting"].count():
             setting_data = Mongo.coll["setting"].find_one()
 
-        return render_template('setting.html', setting_data=setting_data)
+        return render_template("setting.html", setting_data=setting_data)
 
 
-@app.route('/search')
+@app.route("/search")
 @login_check
 @csrf.exempt
-def Search():
+def search():
     q = request.args.get("q", "")
     dataset = []
 
@@ -105,41 +149,41 @@ def Search():
         regx = re.compile(q[1], re.IGNORECASE)
         if q[0] == "port":
 
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.port': int(q[1])}}],
+            search_result = Mongo.coll["scan_result"].aggregate(
+                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {"$match": {"data.port": int(q[1])}}],
                 allowDiskUse=True)
         elif q[0] == "server":
 
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.service': regx}}],
+            search_result = Mongo.coll["scan_result"].aggregate(
+                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {"$match": {"data.service": regx}}],
                 allowDiskUse=True)
         elif q[0] == "ip":
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.ip': regx}}],
+            search_result = Mongo.coll["scan_result"].aggregate(
+                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {"$match": {"data.ip": regx}}],
                 allowDiskUse=True)
         elif q[0] == "soft":
 
-            search_result = Mongo.coll['scan_result'].aggregate(
-                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {'$match': {'data.version_info': regx}}],
+            search_result = Mongo.coll["scan_result"].aggregate(
+                [{"$group": {"_id": "$ip_port", "data": {"$push": "$$ROOT"}}}, {"$match": {"data.version_info": regx}}],
                 allowDiskUse=True)
         else:
-            return render_template('search.html', q=request.args.get("q", ""))
+            return render_template("search.html", q=request.args.get("q", ""))
         for j in search_result:
-            dataset.append([str(j['data'][0]['ip']), j['data'][0]['port'], str(j['data'][0].get('service', '')),
-                            str(j['data'][0].get('version_info', '')),
-                            str(j['data'][0]['create_time'])])
+            dataset.append([str(j["data"][0]["ip"]), j["data"][0]["port"], str(j["data"][0].get("service", "")),
+                            str(j["data"][0].get("version_info", "")),
+                            str(j["data"][0]["create_time"])])
 
-        return render_template('search.html', q=request.args.get("q", ""), dataset=dataset)
-    return render_template('search.html', q=request.args.get("q", ""))
+        return render_template("search.html", q=request.args.get("q", ""), dataset=dataset)
+    return render_template("search.html", q=request.args.get("q", ""))
 
 
-@app.route('/total')
+@app.route("/total")
 @login_check
 @csrf.exempt
-def Total():
+def total():
     task_id = request.args.get("task_id", "")
 
-    task_name = request.args.get('task_name', '')
+    task_name = request.args.get("task_name", "")
 
     count_info = {}
     ports_pie = []
@@ -150,86 +194,86 @@ def Total():
         draw = int(request.args.get("draw", ""))
         start = int(request.args.get("start", ""))
         length = int(request.args.get("length", ""))
-        result = Mongo.coll['scan_result'].find({'base_task_id': ObjectId(task_id)}).sort("ip")
+        result = Mongo.coll["scan_result"].find({"base_task_id": ObjectId(task_id)}).sort("ip")
         for i in result[start:start + length]:
             scan_result.append(
-                [str(i['ip']), i['port'], str(i.get('service', '')), str(i.get('version_info', '')),
-                 str(i['create_time'])])
+                [str(i["ip"]), i["port"], str(i.get("service", "")), str(i.get("version_info", "")),
+                 str(i["create_time"])])
 
         resp = {
-            'draw': draw,
-            'recordsTotal': result.count(),
-            'recordsFiltered': result.count(),
-            'data': scan_result,
+            "draw": draw,
+            "recordsTotal": result.count(),
+            "recordsFiltered": result.count(),
+            "data": scan_result,
         }
 
         return json.dumps(resp)
 
     elif task_name:
 
-        result = Mongo.coll['tasks'].find_one({"name": task_name, "task_status": "finish"}, sort=[("create_time", -1)])
+        result = Mongo.coll["tasks"].find_one({"name": task_name, "task_status": "finish"}, sort=[("create_time", -1)])
         if result:
-            task_id = result['_id']
+            task_id = result["_id"]
         else:
-            task_id = Mongo.coll['tasks'].find_one({"name": task_name}, sort=[("create_time", -1)])["_id"]
+            task_id = Mongo.coll["tasks"].find_one({"name": task_name}, sort=[("create_time", -1)])["_id"]
         ips_total = 0
-        tmp = Mongo.coll['scan_result'].aggregate([{'$match': {'base_task_id': task_id}}, {"$group": {"_id": "$ip"}}])
+        tmp = Mongo.coll["scan_result"].aggregate([{"$match": {"base_task_id": task_id}}, {"$group": {"_id": "$ip"}}])
         for i in tmp:
             ips_total += 1
-        count_info['task_name'] = task_name
-        count_info['task_id'] = task_id
-        count_info['ips_total'] = ips_total
+        count_info["task_name"] = task_name
+        count_info["task_id"] = task_id
+        count_info["ips_total"] = ips_total
 
-        result = Mongo.coll['scan_result'].find({'base_task_id': task_id})
+        result = Mongo.coll["scan_result"].find({"base_task_id": task_id})
 
-        count_info['ports_total'] = result.count()
+        count_info["ports_total"] = result.count()
 
-        result = Mongo.coll['scan_result'].aggregate(
-            [{'$match': {'base_task_id': task_id}}, {"$group": {"_id": "$port", "value": {"$sum": 1}}},
+        result = Mongo.coll["scan_result"].aggregate(
+            [{"$match": {"base_task_id": task_id}}, {"$group": {"_id": "$port", "value": {"$sum": 1}}},
              {"$sort": {"value": -1}}, {"$limit": 10}])
         for j in result:
             ports_pie.append({"name": str(j["_id"]), "value": j["value"]})
 
-        result = Mongo.coll['scan_result'].aggregate(
-            [{'$match': {'base_task_id': task_id}}, {"$group": {"_id": "$service", "value": {"$sum": 1}}},
+        result = Mongo.coll["scan_result"].aggregate(
+            [{"$match": {"base_task_id": task_id}}, {"$group": {"_id": "$service", "value": {"$sum": 1}}},
              {"$sort": {"value": -1}}, {"$limit": 10}])
         for j in result:
             service_pie.append({"name": str(j["_id"]), "value": j["value"]})
 
-    return render_template('total.html', count_info=count_info, ports_pie=ports_pie,
+    return render_template("total.html", count_info=count_info, ports_pie=ports_pie,
                            service_pie=service_pie, scan_result=scan_result)
 
 
-@app.route('/diff_result', methods=['get'])
+@app.route("/diff_result", methods=["get"])
 @login_check
 @csrf.exempt
-def Diffresult():
-    task_id = request.args.get('task_id', '')
+def diff_result():
+    task_id = request.args.get("task_id", "")
 
     resp = {}
     add_ips, add_ports = [], []
     if task_id:
-        cursor = Mongo.coll['tasks'].find_one({"_id": ObjectId(task_id)})
-        if cursor and cursor['diff_result']['diff']:
-            resp['title'] = cursor['create_time'].strftime('%Y-%m-%d')
-            if 'add_ips' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ips']) > 0:
-                resp['add_ips'] = cursor['diff_result']['add_ips']
+        cursor = Mongo.coll["tasks"].find_one({"_id": ObjectId(task_id)})
+        if cursor and cursor["diff_result"]["diff"]:
+            resp["title"] = cursor["create_time"].strftime("%Y-%m-%d")
+            if "add_ips" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ips"]) > 0:
+                resp["add_ips"] = cursor["diff_result"]["add_ips"]
 
-            if 'add_ports' in cursor['diff_result'].keys() and len(cursor['diff_result']['add_ports']) > 0:
+            if "add_ports" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ports"]) > 0:
 
-                for i in cursor['diff_result']['add_ports']:
+                for i in cursor["diff_result"]["add_ports"]:
                     ip, port = i.split(":")
 
-                    c = Mongo.coll['scan_result'].find_one({"ip": ip, "port": int(port)}, sort=[("create_time", -1)])
+                    c = Mongo.coll["scan_result"].find_one({"ip": ip, "port": int(port)}, sort=[("create_time", -1)])
 
-                    add_ports.append({"ip": i, "service": c['service'], "version_info": c['version_info'].strip()})
-                resp['add_ports'] = add_ports
+                    add_ports.append({"ip": i, "service": c["service"], "version_info": c["version_info"].strip()})
+                resp["add_ports"] = add_ports
     return json.dumps(resp)
 
 
-@app.route('/add_task', methods=['get', 'post'])
+@app.route("/add_task", methods=["get", "post"])
 @login_check
-def Addtask():
+def add_task():
     # 添加任务和拆分任务给flask做
 
     if request.method == "POST":
@@ -269,12 +313,12 @@ def Addtask():
 
 
     else:
-        return render_template('add_task.html')
+        return render_template("add_task.html")
 
 
-@app.route('/edit_task', methods=['get', 'post'])
+@app.route("/edit_task", methods=["get", "post"])
 @login_check
-def Edittask():
+def edit_task():
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
@@ -311,7 +355,7 @@ def Edittask():
 
 
     else:
-        task_name = request.args.get('task_name', '')
+        task_name = request.args.get("task_name", "")
         task_args = {
             "task_name": "",
             "task_ips": "",
@@ -329,14 +373,14 @@ def Edittask():
             task_args["job_time"], task_args["job_unit"] = cron.split(" ")
             task_args["white_ip"] = task_args["white_ip"].strip()
 
-        return render_template('edit_task.html', task_args=task_args)
+        return render_template("edit_task.html", task_args=task_args)
 
 
-@app.route('/resume_scheduler')
+@app.route("/resume_scheduler")
 @login_check
 @csrf.exempt
-def Resume_scheduler():
-    task_name = request.args.get('task_name', '')
+def resume_scheduler():
+    task_name = request.args.get("task_name", "")
     try:
         scheduler.resume_job(task_name)
         result = {"status": "success", "content": "启动循环成功"}
@@ -347,11 +391,11 @@ def Resume_scheduler():
     return dumps(result)
 
 
-@app.route('/pause_scheduler')
+@app.route("/pause_scheduler")
 @login_check
 @csrf.exempt
-def Pause_scheduler():
-    task_name = request.args.get('task_name', '')
+def pause_scheduler():
+    task_name = request.args.get("task_name", "")
     try:
         scheduler.pause_job(task_name)
         result = {"status": "success", "content": "暂停循环成功"}
@@ -362,57 +406,56 @@ def Pause_scheduler():
     return dumps(result)
 
 
-@app.route('/')
+@app.route("/")
 @login_check
 @csrf.exempt
-def Index():
+def index():
     result = []
-    next_run_time = u"无"
-    cursor = Mongo.coll['tasks'].aggregate(
+    next_run_time = "无"
+    cursor = Mongo.coll["tasks"].aggregate(
         [{"$sort": {"create_time": -1}}, {"$group": {"_id": "$name"}}])
     for i in cursor:
 
-        tasks = Mongo.coll['tasks'].find({'name': i['_id']}, sort=[("create_time", 1)])
-        aps = scheduler.get_job(id=i['_id'])
+        tasks = Mongo.coll["tasks"].find({"name": i["_id"]}, sort=[("create_time", 1)])
+        queue_num = redis_web.qsize("".join(["scan_", str(tasks[tasks.count() - 1]["_id"])]))
+        aps = scheduler.get_job(id=i["_id"])
         # 循环任务
         if aps:
             if aps.next_run_time:
                 next_run_time = aps.next_run_time.strftime(
                     "%Y-%m-%d %H:%M:%S")
-            else:
-                next_run_time = "无"
             result.append(
                 {"name": aps.args[0], "task_type": aps.args[3],
                  "ip": aps.args[1],
                  "port": aps.args[2], "length": tasks.count(),
-                 "create_time": tasks[0]['create_time'], "cron": aps.args[4],
-                 "task_status": tasks[tasks.count() - 1]['task_status'], "next_run_time": next_run_time
+                 "create_time": tasks[0]["create_time"], "cron": aps.args[4],
+                 "task_status": tasks[tasks.count() - 1]["task_status"], "next_run_time": next_run_time,
+                 "queue_num": queue_num
                  })
         # 一次性任务
         else:
-            next_run_time = "无"
-
             result.append(
-                {"name": i['_id'], "task_type": tasks[tasks.count() - 1]['task_type'],
-                 "ip": tasks[tasks.count() - 1]['ip'],
-                 "port": tasks[tasks.count() - 1]['port'], "length": tasks.count(),
-                 "create_time": tasks[0]['create_time'], "cron": tasks[tasks.count() - 1].get("cron", "no"),
-                 "task_status": tasks[tasks.count() - 1]['task_status'], "next_run_time": next_run_time
+                {"name": i["_id"], "task_type": tasks[tasks.count() - 1]["task_type"],
+                 "ip": tasks[tasks.count() - 1]["ip"],
+                 "port": tasks[tasks.count() - 1]["port"], "length": tasks.count(),
+                 "create_time": tasks[0]["create_time"], "cron": tasks[tasks.count() - 1].get("cron", "no"),
+                 "task_status": tasks[tasks.count() - 1]["task_status"], "next_run_time": next_run_time,
+                 "queue_num": queue_num
                  })
 
-    return render_template('index.html', result=result)
+    return render_template("index.html", result=result)
 
 
-@app.route('/task_detail')
+@app.route("/task_detail")
 @login_check
 @csrf.exempt
-def TaskDetail():
+def task_detail():
     task_info = {}
-    task_name = request.args.get('task_name', '')
+    task_name = request.args.get("task_name", "")
     next_run_time = ""
-    # page = int(request.args.get('page', '1'))
+    # page = int(request.args.get("page", "1"))
 
-    tasks = Mongo.coll['tasks'].find({'name': task_name}, sort=[("create_time", 1)])
+    tasks = Mongo.coll["tasks"].find({"name": task_name}, sort=[("create_time", 1)])
     # if (page - 1) * page_size < tasks.count():
     #     tasks = tasks.limit(page_size).skip((page - 1) * page_size)
     if tasks.count():
@@ -429,66 +472,73 @@ def TaskDetail():
         else:
             next_run_time = u"无"
 
-        task_info = {"task_name": task_name, "task_type": tasks[0]['task_type'], "ip": tasks[0]['ip'],
-                     "port": tasks[0]['port'], "scan_count": tasks.count(),
-                     "create_time": tasks[0]['create_time'].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[0]['cron'],
+        task_info = {"task_name": task_name, "task_type": tasks[0]["task_type"], "ip": tasks[0]["ip"],
+                     "port": tasks[0]["port"], "scan_count": tasks.count(),
+                     "create_time": tasks[0]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[0]["cron"],
                      "next_run_time": next_run_time}
 
-    return render_template('detail.html', task_info=task_info, tasks=tasks)
+    return render_template("detail.html", task_info=task_info, tasks=tasks)
 
 
-@app.route('/delete_task', methods=['get', 'post'])
+@app.route("/delete_task", methods=["get", "post"])
 @login_check
 @csrf.exempt
-def DeleteTask():
-    task_name = request.form.get('task_name', '')
+def delete_task():
+    task_name = request.form.get("task_name", "")
     if task_name:
-        result = Mongo.coll['tasks'].find({'name': task_name})
-        for doc in result:
-            if Mongo.coll['tasks'].delete_one({'_id': doc['_id']}):
+        if is_last_task(task_name):
+            Mongo.coll["tasks"].remove({})
+            Mongo.coll["scan_result"].remove({})
+            delete_ip()
 
-                if not Mongo.coll['scan_result'].delete_many({'base_task_id': doc['_id']}):
-                    return 'fail'
-            else:
-                return 'fail'
+        else:
+            result = Mongo.coll["tasks"].find({"name": task_name})
+            for doc in result:
+                if Mongo.coll["tasks"].delete_one({"_id": doc["_id"]}):
+
+                    if not Mongo.coll["scan_result"].delete_many({"base_task_id": doc["_id"]}):
+                        return "fail"
+                else:
+                    return "fail"
+                delete_ip(doc["_id"])
         if scheduler.get_job(id=task_name):
             scheduler.delete_job(id=task_name)
-        delete_ip(doc['_id'])
-        return 'success'
-    return 'fail'
+
+        return "success"
+    return "fail"
 
 
-@app.route('/login', methods=['get', 'post'])
+@app.route("/login", methods=["get", "post"])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
+    if request.method == "GET":
+        return render_template("login.html")
     else:
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if username == app.config.get('ACCOUNT') and password == app.config.get('PASSWORD'):
-            session['login'] = 'login_success'
-            return dumps({"status": "success", "content": "登陆成功", "redirect": url_for("Index")})
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if username == app.config.get("ACCOUNT") and password == app.config.get("PASSWORD"):
+            session["login"] = "login_success"
+            return dumps({"status": "success", "content": "登陆成功", "redirect": url_for("index")})
         else:
             return dumps({"status": "error", "content": "密码错误"})
 
 
-@app.route('/logout')
+@app.route("/logout")
 @login_check
-def LoginOut():
-    session['login'] = ''
-    return redirect(url_for('login'))
+def logout():
+    session["login"] = ""
+    return redirect(url_for("login"))
 
 
-@app.route('/500')
-def Error():
-    return render_template('500.html')
+@app.route("/500")
+def runtime_error():
+    return render_template("500.html")
 
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
-    return redirect(url_for('Error'))
+    return redirect(url_for("Error"))
 
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return render_template('404.html')
+    return render_template("404.html")

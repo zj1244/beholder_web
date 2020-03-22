@@ -2,7 +2,7 @@
 import redis
 
 
-class Pyredis(object):
+class PyRedis(object):
     def __init__(self, hostname='localhost', port=6379, db=0, password=''):
         """
         连接数据库
@@ -70,12 +70,12 @@ class Pyredis(object):
         """
         if block:
             item = self.__db.blpop(key, timeout=timeout)
-            # Pyredis Blpop 命令移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
+            # PyRedis Blpop 命令移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
             # 如果列表为空，返回一个 nil 。 否则，返回一个含有两个元素的列表，第一个元素是被弹出元素所属的 key ，第二个元素是被弹出元素的值。
             if item:
                 item = item[1]
         else:
-            # Pyredis Lpop 命令用于移除并返回列表的第一个元素。
+            # PyRedis Lpop 命令用于移除并返回列表的第一个元素。
             item = self.__db.lpop(key)
 
         return item
@@ -88,13 +88,18 @@ class Pyredis(object):
         """
         return self.__db.lrange(key, start, end)
 
-    def del_key(self, key):
+    def del_key(self, *key):
         """
         删除键
         :return:
         """
-        self.__db.delete(key)
-
+        self.__db.delete(*key)
+    def keys(self, pattern='*'):
+        """
+        获得指定keys
+        :return:
+        """
+        return self.__db.keys(pattern)
     def exists_key(self, key):
         """
         判断是否存在
@@ -158,13 +163,4 @@ class Pyredis(object):
         return self.__db.zremrangebyscore(key, min, max)
 
 
-if __name__ == '__main__':
-    from scanner.config import *
-    from time import time
 
-    redis_queue = Pyredis(hostname=REDIS_IP, port=REDIS_PORT, password=REDIS_PWD)
-    redis_queue.del_key("scan_5c989f07e8123c748804de4f")
-
-
-    a = redis_queue.zremrangebyscore("ack_scan_5c989f07e8123c748804de4f", "-INF", "+INF")
-    pass

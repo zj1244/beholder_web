@@ -7,7 +7,7 @@ from datetime import datetime
 from log_handle import Log
 
 from app import Mongo
-from app import redis_queue
+from app import redis_web
 
 
 def get_white_ip(white_ip):
@@ -20,7 +20,13 @@ def get_white_ip(white_ip):
 
     return white_ip_list
 
+def is_last_task(task_name):
 
+    task_count=Mongo.coll['tasks'].find({'name': {"$ne": task_name}}).count()
+    if task_count:
+        return False
+    else:
+        return True
 def is_ip(ip):
     patt = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
     if not re.search(patt, ip):
@@ -38,9 +44,16 @@ def format_ip(ip_range):
     return ip_list
 
 
-def delete_ip(task_id):
-    redis_queue.del_key("scan_" + str(task_id))
-    redis_queue.zremrangebyscore("ack_scan_" + str(task_id), "-INF", "+INF")
+def delete_ip(task_id=""):
+    if task_id:
+        redis_web.del_key("scan_" + str(task_id))
+        redis_web.zremrangebyscore("ack_scan_" + str(task_id), "-INF", "+INF")
+    else:
+        scan_keys=redis_web.keys("scan*")
+        redis_web.del_key(*scan_keys)
+        ack_keys = redis_web.keys("ack_scan_*")
+        for ack in ack_keys:
+            redis_web.zremrangebyscore(ack, "-INF", "+INF")
 
 
 def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
@@ -52,7 +65,7 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
 
     try:
         Log().info("开始插入数据")
-        pipe = redis_queue.pipe()
+        pipe = redis_web.pipe()
 
         insert_result = mongo_task.insert_one(
             {"name": task_name, "ip": task_ips, "port": task_ports, "diff_result": {"diff": 0},
