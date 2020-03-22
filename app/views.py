@@ -51,7 +51,7 @@ def node():
         for k, v in node_info.items():
 
             last_time = float(v)
-            if time.time() - last_time > 60 * 5:
+            if time.time() - last_time > 60 * 6:
                 status = "offline"
             else:
                 status = "online"
