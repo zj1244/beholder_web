@@ -69,10 +69,12 @@ def node():
 @csrf.exempt
 def delete_node():
     ip = request.form.get("ip", "")
-    if redis_web.hdel(hash_name="beholder_node", key=ip):
-        return "success"
-    else:
-        return "fail"
+    last_time=redis_web.hget(hash_name="beholder_node",key=ip)
+    if time.time() - float(last_time) > 60 * 6:
+        if redis_web.hdel(hash_name="beholder_node", key=ip):
+            return "success"
+
+    return "fail"
 
 
 @app.route("/setting", methods=["get", "post"])
