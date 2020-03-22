@@ -50,10 +50,12 @@ def delete_ip(task_id=""):
         redis_web.zremrangebyscore("ack_scan_" + str(task_id), "-INF", "+INF")
     else:
         scan_keys=redis_web.keys("scan*")
-        redis_web.del_key(*scan_keys)
-        ack_keys = redis_web.keys("ack_scan_*")
-        for ack in ack_keys:
-            redis_web.zremrangebyscore(ack, "-INF", "+INF")
+        if scan_keys:
+            redis_web.del_key(*scan_keys)
+            ack_keys = redis_web.keys("ack_scan_*")
+            if ack_keys:
+                for ack in ack_keys:
+                    redis_web.zremrangebyscore(ack, "-INF", "+INF")
 
 
 def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
