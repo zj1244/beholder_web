@@ -22,9 +22,6 @@ Mongo = mongo.MongoDB(app.config.get('MONGO_IP'), app.config.get('MONGO_PORT'), 
 
 redis_web = PyRedis(hostname=app.config.get("REDIS_IP", ""), port=app.config.get("REDIS_PORT", ""),
                     password=app.config.get("REDIS_PWD", ""))
-
 app.permanent_session_lifetime = timedelta(hours=24 * 2)
-
 scheduler = APScheduler()
 
-from app import views

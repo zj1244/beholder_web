@@ -1,4 +1,4 @@
-from app import app, scheduler
+from app.views import app, scheduler
 from app.lib.log_handle import Log
 
 if __name__ == '__main__':
