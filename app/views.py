@@ -413,11 +413,11 @@ def pause_scheduler():
 @csrf.exempt
 def index():
     result = []
-    next_run_time = "无"
+
     cursor = Mongo.coll["tasks"].aggregate(
         [{"$sort": {"create_time": -1}}, {"$group": {"_id": "$name"}}])
     for i in cursor:
-
+        next_run_time = "无"
         tasks = Mongo.coll["tasks"].find({"name": i["_id"]}, sort=[("create_time", 1)])
         queue_num = redis_web.qsize("".join(["scan_", str(tasks[tasks.count() - 1]["_id"])]))
         aps = scheduler.get_job(id=i["_id"])
