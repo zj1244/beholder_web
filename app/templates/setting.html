@@ -93,10 +93,10 @@
 
                                 <div class="col-sm-5">
                                     {% if setting_data["mail_enable"]=="on" %}
-                                        <input type="text" name="email_pwd" class="form-control email_info"
+                                        <input type="password" name="email_pwd" class="form-control email_info"
                                                placeholder="123456" value="{{ setting_data['email_pwd'] }}">
                                     {% else %}
-                                        <input type="text" name="email_pwd" class="form-control email_info"
+                                        <input type="password" name="email_pwd" class="form-control email_info"
                                                placeholder="123456" disabled="disabled">
                                     {% endif %}
                                 </div>
