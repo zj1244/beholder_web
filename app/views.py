@@ -69,7 +69,7 @@ def node():
 @csrf.exempt
 def delete_node():
     ip = request.form.get("ip", "")
-    last_time=redis_web.hget(hash_name="beholder_node",key=ip)
+    last_time = redis_web.hget(hash_name="beholder_node", key=ip)
     if time.time() - float(last_time) > 60 * 6:
         if redis_web.hdel(hash_name="beholder_node", key=ip):
             return "success"
@@ -86,13 +86,13 @@ def setting():
             "email_server": "",
             "sender": "",
             "email_pwd": "",
+            "mail_enable": "off",
             "email_address": ""
         }
 
         for k, v in request.form.items():
             if k in form_dict:
                 form_dict[k] = v
-        form_dict["mail_enable"] = request.form.get("status")
         if form_dict["scanning_num"]:
             try:
                 form_dict["scanning_num"] = int(form_dict["scanning_num"])
@@ -102,33 +102,26 @@ def setting():
             return dumps({"status": "error", "content": "并发数为空"})
 
         if form_dict["mail_enable"] == "on":
-            if form_dict["email_server"] and form_dict["sender"] and form_dict["email_pwd"] and form_dict[
-                "email_address"]:
-                if "@" in form_dict["sender"] and "@" in form_dict["email_address"]:
-                    if "," in form_dict["email_address"]:
-                        form_dict["email_address"] = form_dict["email_address"].split(",")
-
-                    if Mongo.coll["setting"].count():
-                        insert_result = Mongo.coll["setting"].update_one({}, {"$set": form_dict})
-                    else:
-                        insert_result = Mongo.coll["setting"].insert_one(form_dict)
-                    if insert_result:
-                        return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
-
-            else:
+            if not (form_dict["email_server"] and form_dict["sender"] and form_dict["email_pwd"] and form_dict[
+                "email_address"]):
                 return dumps({"status": "error", "content": "邮件配置不能为空"})
+
+            if not ("@" in form_dict["sender"] and "@" in form_dict["email_address"]):
+                return dumps({"status": "error", "content": "邮件地址错误"})
+
+            if "," in form_dict["email_address"]:
+                form_dict["email_address"] = form_dict["email_address"].split(",")
+
+        if Mongo.coll["setting"].count():
+            insert_result = Mongo.coll["setting"].update_one({}, {
+                "$set": form_dict})
         else:
+            insert_result = Mongo.coll["setting"].insert_one(
+                form_dict)
+        if insert_result:
+            return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
 
-            if Mongo.coll["setting"].count():
-                insert_result = Mongo.coll["setting"].update_one({}, {
-                    "$set": {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]}})
-            else:
-                insert_result = Mongo.coll["setting"].insert_one(
-                    {"mail_enable": "off", "scanning_num": form_dict["scanning_num"]})
-            if insert_result:
-                return dumps({"status": "success", "content": "配置成功", "redirect": "/setting"})
-
-        return dumps({"status": "error", "content": "添加任务失败"})
+        return dumps({"status": "error", "content": "添加配置失败"})
     else:
 
         setting_data = {}

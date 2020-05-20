@@ -55,9 +55,9 @@
                                 <div class="col-sm-5">
                                     {% if setting_data["mail_enable"]=="on" %}
 
-                                        <input style="margin-right: 5px;" name="status" type="checkbox" checked>
+                                        <input style="margin-right: 5px;" name="mail_enable" type="checkbox" checked>
                                     {% else %}
-                                        <input style="margin-right: 5px;" name="status" type="checkbox">
+                                        <input style="margin-right: 5px;" name="mail_enable" type="checkbox">
                                     {% endif %}
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
         Messenger.options = {
             extraClasses: 'messenger-fixed messenger-on-bottom messenger-theme-air messenger-on-right'
         }
-        $('[name="status"]').bootstrapSwitch({    //初始化按钮
+        $('[name="mail_enable"]').bootstrapSwitch({    //初始化按钮
             onText: "开启",
             offText: "关闭",
             onColor: "success",
