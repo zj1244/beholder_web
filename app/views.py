@@ -287,19 +287,14 @@ def add_task():
                 if task_type == "loop":
                     form.job_time = float(form.job_time)
                     if form.job_unit == "days":
-                        job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                                args=(
-                                                    form.task_name, form.task_ips, form.task_ports,
-                                                    task_type, cron, form.white_ip),
-                                                trigger="interval",
-                                                days=form.job_time, replace_existing=True)
+                        job_unit = "days"
                     else:
-                        job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                                args=(
-                                                    form.task_name, form.task_ips, form.task_ports,
-                                                    task_type, cron, form.white_ip),
-                                                trigger="interval",
-                                                hours=form.job_time, replace_existing=True)
+                        job_unit = "hours"
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                            args=(
+                                                form.task_name, form.task_ips, form.task_ports,
+                                                task_type, cron, form.white_ip),
+                                            trigger="interval", replace_existing=True, **{job_unit: form.job_time})
 
                 return dumps({"status": "success", "content": "添加任务成功", "redirect": "/add_task"})
             else:
@@ -328,21 +323,18 @@ def edit_task():
             cron = " ".join([form.job_time, form.job_unit])
 
             if task_type == "loop":
+
                 form.job_time = float(form.job_time)
                 if form.job_unit == "days":
-                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                            args=(
-                                                form.task_name, form.task_ips, form.task_ports,
-                                                task_type, cron, form.white_ip),
-                                            trigger="interval",
-                                            days=form.job_time, replace_existing=True)
+                    job_unit = "days"
                 else:
-                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                            args=(
-                                                form.task_name, form.task_ips, form.task_ports,
-                                                task_type, cron, form.white_ip),
-                                            trigger="interval",
-                                            hours=form.job_time, replace_existing=True)
+                    job_unit = "hours"
+
+                job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                        args=(
+                                            form.task_name, form.task_ips, form.task_ports,
+                                            task_type, cron, form.white_ip),
+                                        trigger="interval", replace_existing=True, **{job_unit: form.job_time})
             else:
                 return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/edit_task"})
             return dumps({"status": "success", "content": "更新任务成功", "redirect": "/"})
@@ -447,12 +439,8 @@ def index():
 def task_detail():
     task_info = {}
     task_name = request.args.get("task_name", "")
-    next_run_time = ""
-    # page = int(request.args.get("page", "1"))
 
     tasks = Mongo.coll["tasks"].find({"name": task_name}, sort=[("create_time", 1)])
-    # if (page - 1) * page_size < tasks.count():
-    #     tasks = tasks.limit(page_size).skip((page - 1) * page_size)
     if tasks.count():
         aps = scheduler.get_job(id=task_name)
         if aps:
