@@ -8,8 +8,20 @@
          folder instead of downloading all of them to reduce the load. -->
 
     <link rel="stylesheet" href="../static/plugins/datatables/dataTables.bootstrap.css">
+    <style type="text/css">
+        .detail {
+            table-layout: fixed;
+            width: 100%;
+            white-space: nowrap;
+        }
 
-    {#    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">#}
+        .detail td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -44,14 +56,14 @@
                                style="border-left:3px solid deepskyblue;border-bottom:1px solid deepskyblue">
                             <tbody>
                             <tr>
-                                <th>任务名称</th>
-                                <th>扫描类型</th>
-                                <th>扫描IP</th>
-                                <th>扫描端口</th>
-                                <th>扫描次数</th>
-                                <th>创建时间</th>
-                                <th>循环周期</th>
-                                <th>下次扫描时间</th>
+                                <th width="10%">任务名称</th>
+                                <th width="10%">扫描类型</th>
+                                <th width="30%">扫描IP</th>
+                                <th width="10%">扫描端口</th>
+                                <th width="10%">扫描次数</th>
+                                <th width="10%">创建时间</th>
+                                <th width="10%">循环周期</th>
+                                <th width="10%">下次扫描时间</th>
                             </tr>
                             <tr>
                                 <td>{{ task_info.task_name }}</td>
@@ -60,7 +72,12 @@
                                 {% else %}
                                     <td>常规扫描</td>
                                 {% endif %}
-                                <td>{{ task_info.ip }}</td>
+
+                                <td>
+                                    <span data-toggle="tooltip" data-placement="left"
+                                          title="{{ task_info.ip }}">{{ task_info.ip }}</span>
+
+                                </td>
                                 <td>{{ task_info.port }}</td>
                                 <td>{{ task_info.scan_count }}</td>
                                 <td>{{ task_info.create_time }}</td>
@@ -94,8 +111,6 @@
                     <!-- /.box-header -->
 
 
-
-
                     <div class="box-body">
                         <table class="table  table-hover"
                                style="border-left:3px solid green;border-bottom:1px solid green" id="history_table">
@@ -117,8 +132,8 @@
                                 <tr>
                                     <td><b><a href="javascript:void(0)" name="history_scan" id="{{ i['_id'] }}">
                                         #{{ loop.index }}</a></b></td>
-                                    <td>{{ i.create_time  }}</td>
-                                    <td>{{ i.end_time}}</td>
+                                    <td>{{ i.create_time }}</td>
+                                    <td>{{ i.end_time }}</td>
                                     {% if i['task_status']=='finish' %}
                                         <td><span class="label label-success">扫描结束</span></td>
                                     {% elif i['task_status']=='ready' %}
@@ -170,7 +185,7 @@
 
 
                 <div class="box" id="diff_ports">
-                    <div class="box-header with-border" >
+                    <div class="box-header with-border">
                         <h3 class="box-title"><b id="add_ports_title">新增端口</b></h3>
                     </div>
                     <!-- /.box-header -->
@@ -250,7 +265,7 @@
         $(document).ready(function () {
             $('#history_table').DataTable({
                 "searching": false,
-                 'order' : [1,'desc']
+                'order': [1, 'desc']
             });
         });
 

@@ -8,7 +8,20 @@
          folder instead of downloading all of them to reduce the load. -->
     <link rel="stylesheet" href="../static/plugins/messenger/messenger-theme-future.css">
     <link rel="stylesheet" href="../static/plugins/messenger/messenger.css">
+    <style type="text/css">
+        .ip {
+            table-layout: fixed;
+            width: 100%;
+            white-space: nowrap;
+        }
 
+        .ip td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -34,22 +47,22 @@
 
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <table class="table  table-hover"
+                        <table class="table  table-hover ip"
                                style="border-left:3px solid green;border-bottom:1px solid green" id="index_table">
                             <thead>
                             <tr>
-                                <th>任务名称</th>
-                                <th>扫描类型</th>
-                                <th>扫描IP</th>
-                                <th>扫描端口</th>
-                                <th>扫描次数</th>
-                                <th>创建时间</th>
-                                <th>循环周期</th>
-                                <th>下次扫描时间</th>
-                                <th>任务状态</th>
-                                <th>循环状态</th>
-                                <th>任务数</th>
-                                <th>操作</th>
+                                <th width="8%">任务名称</th>
+                                <th width="5%">扫描类型</th>
+                                <th width="8%" >扫描IP</th>
+                                <th width="8%">扫描端口</th>
+                                <th width="5%">扫描次数</th>
+                                <th width="12%">创建时间</th>
+                                <th width="6%">循环周期</th>
+                                <th width="12%">下次扫描时间</th>
+                                <th width="5%">任务状态</th>
+                                <th width="5%">循环状态</th>
+                                <th width="5%">任务数</th>
+                                <th width="21%">操作</th>
 
                             </tr>
                             </thead>
@@ -63,7 +76,10 @@
                                     {% else %}
                                         <td>常规扫描</td>
                                     {% endif %}
-                                    <td>{{ i['ip'] }}</td>
+                                    <td  >
+                                        <span data-toggle="tooltip" data-placement="left" title="{{ i['ip'] }}">{{ i['ip'] }}</span>
+
+                                    </td>
                                     <td>{{ i['port'] }}</td>
                                     <td>{{ i['length'] }}</td>
                                     <td>{{ i['create_time'] | strftime }}</td>
@@ -168,7 +184,7 @@
 
 {% block script %}
     <script src="static/plugins/messenger/messenger.min.js"></script>
-
+    <script src="static/plugins/dotdotdot/dotdotdot.js"></script>
 
 
     <!-- AdminLTE App -->

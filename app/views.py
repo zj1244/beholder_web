@@ -269,8 +269,6 @@ def diff_result():
 @app.route("/add_task", methods=["get", "post"])
 @login_check
 def add_task():
-    # 添加任务和拆分任务给flask做
-
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
@@ -329,15 +327,18 @@ def edit_task():
                     job_unit = "days"
                 else:
                     job_unit = "hours"
-
-                job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                        args=(
-                                            form.task_name, form.task_ips, form.task_ports,
-                                            task_type, cron, form.white_ip),
-                                        trigger="interval", replace_existing=True, **{job_unit: form.job_time})
+                job = scheduler.get_job(id=form.task_name)
+                if job:
+                    scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                            args=(
+                                                form.task_name, form.task_ips, form.task_ports,
+                                                task_type, cron, form.white_ip),
+                                            trigger="interval", replace_existing=True, **{job_unit: form.job_time})
+                else:
+                    return dumps({"status": "error", "content": "未找到此扫描任务", "redirect": "/edit_task"})
             else:
                 return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/edit_task"})
-            return dumps({"status": "success", "content": "更新任务成功", "redirect": "/"})
+            return dumps({"status": "success", "content": "更改的内容将在下次扫描生效", "redirect": "/"})
         return dumps(validate_result)
 
 
@@ -455,9 +456,9 @@ def task_detail():
         else:
             next_run_time = u"无"
 
-        task_info = {"task_name": task_name, "task_type": tasks[0]["task_type"], "ip": tasks[0]["ip"],
-                     "port": tasks[0]["port"], "scan_count": tasks.count(),
-                     "create_time": tasks[0]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[0]["cron"],
+        task_info = {"task_name": task_name, "task_type": tasks[tasks.count()-1]["task_type"], "ip":tasks[tasks.count()-1]["ip"],
+                     "port": tasks[tasks.count()-1]["port"], "scan_count": tasks.count(),
+                     "create_time": tasks[tasks.count()-1]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[tasks.count()-1]["cron"],
                      "next_run_time": next_run_time}
 
     return render_template("detail.html", task_info=task_info, tasks=tasks)

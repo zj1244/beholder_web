@@ -8,16 +8,19 @@ from json import dumps
 class TaskValidate(object):
     def __init__(self, **kwargs):
         self.task_name = "".join(kwargs.get("task_name", ""))
-        self.task_ips = "".join(kwargs.get("task_ips", ""))
+        self.task_ips = "".join(kwargs.get("task_ips", "")).strip()
         self.task_ports = "".join(kwargs.get("task_ports", ""))
         self.job_time = "".join(kwargs.get("job_time", ""))
         self.job_unit = "".join(kwargs.get("job_unit", ""))
         self.white_ip = "".join(kwargs.get("white_ip", ""))
         self.result = {}
 
-    def check_ip(self):
-        if not is_ip(self.task_ips):
-            self.result = {"status": "error", "content": "错误的IP"}
+    def check_ip(self, ips):
+        ip_list = ips.split("\r\n")
+        for ip_line in ip_list:
+            if is_ip(ip_line) is False and ip_line != "":
+                self.result = {"status": "error", "content": "错误的IP"}
+
         return self.result
 
     def check_port(self):
@@ -43,6 +46,8 @@ class TaskValidate(object):
         if self.task_name:
             if Mongo.coll['tasks'].find({"name": self.task_name}).count():
                 self.result = {"status": "error", "content": "任务名称不能重复，请修改"}
+        elif not self.task_name.strip():
+            self.result = {"status": "error", "content": "任务名称不能为空"}
         return self.result
 
     def check_job_unit(self):
@@ -50,17 +55,12 @@ class TaskValidate(object):
             self.result = {"status": "error", "content": "非法时间单位"}
         return self.result
 
-    def check_white_ip(self):
-        white_ip = self.white_ip.split("\r\n")
-        if white_ip:
-            for ip_line in white_ip:
-                if is_ip(ip_line) == False and ip_line != "":
-                    self.result = {"status": "error", "content": "错误的IP"}
-        return self.result
+    def check(self, form):
 
-    def check(self,form):
+        if self.check_ip(self.task_ips):
+            return self.result
 
-        if self.check_ip():
+        if self.check_ip(self.white_ip):
             return self.result
 
         if self.check_port():
@@ -74,15 +74,9 @@ class TaskValidate(object):
 
         if self.check_job_unit():
             return self.result
-        if form=="add_task":
+
+        if form == "add_task":
             if self.check_task_name():
                 return self.result
 
-        if self.check_white_ip():
-            return self.result
-
         return {"status": "success", "content": "验证通过"}
-
-
-
-
