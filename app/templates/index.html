@@ -17,8 +17,11 @@
 
         .ip td {
             white-space: nowrap;
+
             overflow: hidden;
             text-overflow: ellipsis;
+            height: 50px;
+            word-wrap: break-word;
         }
 
     </style>
@@ -50,27 +53,31 @@
                         <table class="table  table-hover ip"
                                style="border-left:3px solid green;border-bottom:1px solid green" id="index_table">
                             <thead>
-                            <tr>
-                                <th width="8%">任务名称</th>
-                                <th width="5%">扫描类型</th>
-                                <th width="8%" >扫描IP</th>
-                                <th width="8%">扫描端口</th>
+                            <tr >
+                                <th width="9%">任务名称</th>
+                                <th width="6%">扫描类型</th>
+                                <th width="10%">扫描IP</th>
+                                <th width="10%">扫描端口</th>
                                 <th width="5%">扫描次数</th>
                                 <th width="12%">创建时间</th>
                                 <th width="6%">循环周期</th>
                                 <th width="12%">下次扫描时间</th>
-                                <th width="5%">任务状态</th>
-                                <th width="5%">循环状态</th>
-                                <th width="5%">任务数</th>
-                                <th width="21%">操作</th>
+                                <th width="7%">任务状态</th>
+                                <th width="7%">循环状态</th>
+                                <th width="7%">任务数</th>
+                                <th width="16%">操作</th>
 
                             </tr>
                             </thead>
                             <tbody>
 
                             {% for i in result %}
-                                <tr>
-                                    <td><b>{{ i['name'] }}</b></td>
+                                <tr >
+
+                                    <td>
+                                        <span data-toggle="tooltip" data-placement="left" title="{{ i['name'] }}"><b>{{ i['name'] }}</b></span>
+
+                                    </td>
                                     {% if i['task_type']=="loop" %}
                                         <td>循环扫描</td>
                                     {% else %}
@@ -80,7 +87,10 @@
                                         <span data-toggle="tooltip" data-placement="left" title="{{ i['ip'] }}">{{ i['ip'] }}</span>
 
                                     </td>
-                                    <td>{{ i['port'] }}</td>
+                                    <td>
+                                         <span data-toggle="tooltip" data-placement="left" title="{{ i['port'] }}">{{ i['port'] }}</span>
+
+                                    </td>
                                     <td>{{ i['length'] }}</td>
                                     <td>{{ i['create_time'] | strftime }}</td>
 
@@ -117,6 +127,7 @@
                                                     onclick="javascript:window.location.href='/task_detail?task_name={{ i['name'] }}'">
                                                 扫描详情
                                             </button>
+
                                             <button type="button" class="btn btn-info btn-xs"
                                                     onclick="javascript:window.location.href='/total?task_name={{ i['name'] }}'">
                                                 查看统计
@@ -132,6 +143,7 @@
                                                     编辑任务
                                                 </button>
                                             {% endif %}
+                                            <br>
                                             <button type="button" class="btn btn-info btn-xs" id="delete_task"
                                                     name="{{ i['name'] }}">删除任务
                                             </button>
@@ -184,7 +196,6 @@
 
 {% block script %}
     <script src="static/plugins/messenger/messenger.min.js"></script>
-    <script src="static/plugins/dotdotdot/dotdotdot.js"></script>
 
 
     <!-- AdminLTE App -->

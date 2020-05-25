@@ -455,10 +455,10 @@ def task_detail():
                 next_run_time = u"无"
         else:
             next_run_time = u"无"
-
-        task_info = {"task_name": task_name, "task_type": tasks[tasks.count()-1]["task_type"], "ip":tasks[tasks.count()-1]["ip"],
-                     "port": tasks[tasks.count()-1]["port"], "scan_count": tasks.count(),
-                     "create_time": tasks[tasks.count()-1]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[tasks.count()-1]["cron"],
+        tasks_count=tasks.count()
+        task_info = {"task_name": task_name, "task_type": tasks[tasks_count-1]["task_type"], "ip":tasks[tasks_count-1]["ip"],
+                     "port": tasks[tasks_count-1]["port"], "scan_count": tasks_count,
+                     "create_time": tasks[tasks_count-1]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[tasks_count-1]["cron"],
                      "next_run_time": next_run_time}
 
     return render_template("detail.html", task_info=task_info, tasks=tasks)
