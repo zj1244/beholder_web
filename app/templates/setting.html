@@ -122,10 +122,21 @@
                         </div>
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <!-- /.box-body -->
-                        <div class="box-footer">
+                        <div class=" box-footer">
 
-                            <button type="submit" id="setting_submit" class="btn btn-info pull-right">提交</button>
+                            <button type="submit" id="setting_submit" class="btn btn-info pull-right"
+                                    style="float:left;margin-left:10px;">提交
+                            </button>
+                            {% if setting_data["mail_enable"]=="on" %}
+                                <input name="test_email" type="button" id="test_email" class="btn btn-info pull-right email_info"
+                                       value="发送测试邮件" onclick="send_email()"/>
+                            {% else %}
+                                <input name="test_email" type="button" id="test_email" class="btn btn-info pull-right email_info"
+                                       value="发送测试邮件" onclick="send_email()" disabled="disabled"/>
+                            {% endif %}
+
                         </div>
+
                         <!-- /.box-footer -->
                     </form>
                     <!-- /.box-body -->
@@ -196,6 +207,38 @@
                 }
             }
         });
+
+
+        function send_email() {
+
+            form = $("form#setting_form");
+            messenger = Messenger();
+            $.ajax({
+                type: form.attr('method'),
+                url: "/test_email",
+                data: form.serialize(),
+                success: function (data) {
+                    var response = JSON.parse(data);
+                    if (response.status == "success") {
+                        messenger.post({
+                            message: response.content,
+                            type: "success"
+                        });
+
+
+                    } else if (response.status == "error")
+
+                        messenger.post({
+                            message: response.content,
+                            type: "error"
+                        })
+                }
+            });
+
+
+        }
+
+
     </script>
 
 {% endblock %}

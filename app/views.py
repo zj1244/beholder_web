@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFError
 from app.lib.validate import TaskValidate
 from lib.login_handle import login_check
 from . import app, Mongo, scheduler, csrf, redis_web
-from app.lib.common import add_ip, delete_ip, is_last_task
+from app.lib.common import add_ip, delete_ip, is_last_task, send_mail
 
 
 @app.template_filter("timestamp2str")
@@ -304,6 +304,21 @@ def add_task():
         return render_template("add_task.html")
 
 
+@app.route("/pause_scheduler")
+@login_check
+@csrf.exempt
+def pause_scheduler():
+    task_name = request.args.get("task_name", "")
+    try:
+        scheduler.pause_job(task_name)
+        result = {"status": "success", "content": "暂停循环成功"}
+    except:
+        Log().exception("暂停循环出错")
+        result = {"status": "error", "content": "暂停循环出错"}
+
+    return dumps(result)
+
+
 @app.route("/edit_task", methods=["get", "post"])
 @login_check
 def edit_task():
@@ -330,10 +345,10 @@ def edit_task():
                 job = scheduler.get_job(id=form.task_name)
                 if job:
                     scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                            args=(
-                                                form.task_name, form.task_ips, form.task_ports,
-                                                task_type, cron, form.white_ip),
-                                            trigger="interval", replace_existing=True, **{job_unit: form.job_time})
+                                      args=(
+                                          form.task_name, form.task_ips, form.task_ports,
+                                          task_type, cron, form.white_ip),
+                                      trigger="interval", replace_existing=True, **{job_unit: form.job_time})
                 else:
                     return dumps({"status": "error", "content": "未找到此扫描任务", "redirect": "/edit_task"})
             else:
@@ -379,18 +394,19 @@ def resume_scheduler():
     return dumps(result)
 
 
-@app.route("/pause_scheduler")
-@login_check
-@csrf.exempt
-def pause_scheduler():
-    task_name = request.args.get("task_name", "")
-    try:
-        scheduler.pause_job(task_name)
-        result = {"status": "success", "content": "暂停循环成功"}
-    except:
-        Log().exception("暂停循环出错")
-        result = {"status": "error", "content": "暂停循环出错"}
+@app.route("/test_email",methods=["POST"])
+def test_email():
+    result = {"status": "error", "content": "邮件发送失败"}
 
+    email_server = request.form.get("email_server", "")
+    sender = request.form.get("sender", "")
+    email_pwd = request.form.get("email_pwd", "")
+    email_address = request.form.get("email_address", "")
+    if request.form.get("mail_enable", "off") == "on":
+
+        mail_status = send_mail("hello world", "test", email_server, True, sender, email_pwd, email_address)
+        if mail_status:
+            result = {"status": "success", "content": "邮件已发送，请查收"}
     return dumps(result)
 
 
@@ -455,10 +471,12 @@ def task_detail():
                 next_run_time = u"无"
         else:
             next_run_time = u"无"
-        tasks_count=tasks.count()
-        task_info = {"task_name": task_name, "task_type": tasks[tasks_count-1]["task_type"], "ip":tasks[tasks_count-1]["ip"],
-                     "port": tasks[tasks_count-1]["port"], "scan_count": tasks_count,
-                     "create_time": tasks[tasks_count-1]["create_time"].strftime("%Y-%m-%d %H:%M:%S"), "cron": tasks[tasks_count-1]["cron"],
+        tasks_count = tasks.count()
+        task_info = {"task_name": task_name, "task_type": tasks[tasks_count - 1]["task_type"],
+                     "ip": tasks[tasks_count - 1]["ip"],
+                     "port": tasks[tasks_count - 1]["port"], "scan_count": tasks_count,
+                     "create_time": tasks[tasks_count - 1]["create_time"].strftime("%Y-%m-%d %H:%M:%S"),
+                     "cron": tasks[tasks_count - 1]["cron"],
                      "next_run_time": next_run_time}
 
     return render_template("detail.html", task_info=task_info, tasks=tasks)

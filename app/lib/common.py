@@ -9,6 +9,31 @@ from log_handle import Log
 from app import Mongo
 from app import redis_web
 
+try:
+    from mailer import Mailer
+    from mailer import Message
+except ImportError:
+    Log().warning("error Missing Mailer")
+
+
+def send_mail(subject, contents, host, use_ssl, sender, pwd, email_address):
+    try:
+        message = Message(From=sender,
+                          To=email_address, charset="utf-8")
+        message.Subject = subject
+        message.Html = contents
+        mailer = Mailer(host=host, use_ssl=use_ssl, usr=sender[:sender.find("@")],
+                        pwd=pwd)
+
+        mailer.send(message, debug=False)
+
+        Log().info("sender:%s,to=%s" % (sender, email_address))
+    except Exception as e:
+        Log().exception(e)
+        return False
+    return True
+
+
 
 def get_ip_list(ips):
     ip_list = []
