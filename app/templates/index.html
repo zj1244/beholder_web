@@ -134,12 +134,12 @@
                                             </button>
                                             {% if i['next_run_time']!="无" %}
                                                 <button type="button" class="btn btn-info btn-xs"
-                                                        onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}'">
+                                                        onclick="javascript:window.location.href='/edit_diff_task?task_name={{ i['name'] }}'">
                                                     编辑任务
                                                 </button>
                                             {% else %}
                                                 <button type="button" class="btn btn-info btn-xs" disabled="disabled"
-                                                        onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}' ">
+                                                        onclick="javascript:window.location.href='/edit_diff_task?task_name={{ i['name'] }}' ">
                                                     编辑任务
                                                 </button>
                                             {% endif %}

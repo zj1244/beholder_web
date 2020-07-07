@@ -75,7 +75,7 @@ class TaskValidate(object):
         if self.check_job_unit():
             return self.result
 
-        if form == "add_task":
+        if form == "add_diff_task":
             if self.check_task_name():
                 return self.result
 

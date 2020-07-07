@@ -266,13 +266,13 @@ def diff_result():
     return json.dumps(resp)
 
 
-@app.route("/add_task", methods=["get", "post"])
+@app.route("/add_diff_task", methods=["get", "post"])
 @login_check
-def add_task():
+def add_diff_task():
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
-        validate_result = form.check("add_task")
+        validate_result = form.check("add_diff_task")
 
         if validate_result["status"] == "success":
             if form.job_unit == "no":
@@ -294,15 +294,52 @@ def add_task():
                                                 task_type, cron, form.white_ip),
                                             trigger="interval", replace_existing=True, **{job_unit: form.job_time})
 
-                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/add_task"})
+                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/diff_task"})
             else:
                 return dumps({"status": "error", "content": "添加任务失败"})
         return dumps(validate_result)
 
 
     else:
-        return render_template("add_task.html")
+        return render_template("add_diff_task.html")
 
+
+
+@app.route("/add_monitor_task", methods=["get", "post"])
+def add_monitor_task():
+    if request.method == "POST":
+
+        form = TaskValidate(**request.form)
+        validate_result = form.check("diff_task")
+
+        if validate_result["status"] == "success":
+            if form.job_unit == "no":
+                task_type = "normal"
+            else:
+                task_type = "loop"
+
+            cron = " ".join([form.job_time, form.job_unit])
+            if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron, form.white_ip):
+                if task_type == "loop":
+                    form.job_time = float(form.job_time)
+                    if form.job_unit == "days":
+                        job_unit = "days"
+                    else:
+                        job_unit = "hours"
+                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
+                                            args=(
+                                                form.task_name, form.task_ips, form.task_ports,
+                                                task_type, cron, form.white_ip),
+                                            trigger="interval", replace_existing=True, **{job_unit: form.job_time})
+
+                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/diff_task"})
+            else:
+                return dumps({"status": "error", "content": "添加任务失败"})
+        return dumps(validate_result)
+
+
+    else:
+        return render_template("add_monitor_task.html")
 
 @app.route("/pause_scheduler")
 @login_check
@@ -319,13 +356,13 @@ def pause_scheduler():
     return dumps(result)
 
 
-@app.route("/edit_task", methods=["get", "post"])
+@app.route("/edit_diff_task", methods=["get", "post"])
 @login_check
-def edit_task():
+def edit_diff_task():
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
-        validate_result = form.check("edit_task")
+        validate_result = form.check("edit_diff_task")
 
         if validate_result["status"] == "success":
             if form.job_unit == "no":
@@ -350,9 +387,9 @@ def edit_task():
                                           task_type, cron, form.white_ip),
                                       trigger="interval", replace_existing=True, **{job_unit: form.job_time})
                 else:
-                    return dumps({"status": "error", "content": "未找到此扫描任务", "redirect": "/edit_task"})
+                    return dumps({"status": "error", "content": "未找到此扫描任务", "redirect": "/diff_task"})
             else:
-                return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/edit_task"})
+                return dumps({"status": "error", "content": "循环任务不能改成不循环", "redirect": "/diff_task"})
             return dumps({"status": "success", "content": "更改的内容将在下次扫描生效", "redirect": "/"})
         return dumps(validate_result)
 
@@ -376,7 +413,7 @@ def edit_task():
             task_args["job_time"], task_args["job_unit"] = cron.split(" ")
             task_args["white_ip"] = task_args["white_ip"].strip()
 
-        return render_template("edit_task.html", task_args=task_args)
+        return render_template("edit_diff_task.html", task_args=task_args)
 
 
 @app.route("/resume_scheduler")

@@ -1,7 +1,7 @@
 $("#task_submit").click(function () {
 
 
-    form = $("form#addtask_form");
+    form = $("form#task_form");
     messenger = Messenger();
     $.ajax({
         type: form.attr('method'),
