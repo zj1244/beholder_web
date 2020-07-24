@@ -53,9 +53,9 @@
                         <table class="table  table-hover ip"
                                style="border-left:3px solid green;border-bottom:1px solid green" id="index_table">
                             <thead>
-                            <tr >
+                            <tr>
                                 <th width="9%">任务名称</th>
-                                <th width="6%">扫描类型</th>
+                                <th width="6%">任务类型</th>
                                 <th width="10%">扫描IP</th>
                                 <th width="10%">扫描端口</th>
                                 <th width="5%">扫描次数</th>
@@ -72,30 +72,36 @@
                             <tbody>
 
                             {% for i in result %}
-                                <tr >
+                                <tr>
 
                                     <td>
-                                        <span data-toggle="tooltip" data-placement="left" title="{{ i['name'] }}"><b>{{ i['name'] }}</b></span>
+                                        <span data-toggle="tooltip" data-placement="left"
+                                              title="{{ i['name'] }}"><b>{{ i['name'] }}</b></span>
 
                                     </td>
-                                    {% if i['task_type']=="loop" %}
-                                        <td>循环扫描</td>
+                                    {% if i['task_type'] in ["diff_task","loop"] %}
+                                        <td>端口变化</td>
+                                    {% elif i['task_type']=="monitor_task" %}
+                                        <td>端口开放</td>
                                     {% else %}
-                                        <td>常规扫描</td>
+                                        <td>普通扫描</td>
                                     {% endif %}
-                                    <td  >
-                                        <span data-toggle="tooltip" data-placement="left" title="{{ i['ip'] }}">{{ i['ip'] }}</span>
+                                    <td>
+                                        <span data-toggle="tooltip" data-placement="left"
+                                              title="{{ i['ip'] }}">{{ i['ip'] }}</span>
 
                                     </td>
                                     <td>
-                                         <span data-toggle="tooltip" data-placement="left" title="{{ i['port'] }}">{{ i['port'] }}</span>
+                                        <span data-toggle="tooltip" data-placement="left"
+                                              title="{{ i['port'] }}">{{ i['port'] }}</span>
 
                                     </td>
                                     <td>{{ i['length'] }}</td>
                                     <td>{{ i['create_time'] | strftime }}</td>
 
-                                    {% if i['task_type']=="loop" %}
+                                    {% if i['task_type'] in ["diff_task","loop","monitor_task"] %}
                                         <td>{{ i['cron'] | replace("days","天") | replace("hours","小时") }}</td>
+
                                     {% else %}
                                         <td>无</td>
                                     {% endif %}
@@ -114,7 +120,7 @@
                                     {% if i['next_run_time']!="无" %}
                                         <td><span class="label label-success">循环中</span></td>
                                     {% else %}
-                                        {% if i['task_type']=="loop" %}
+                                        {% if i['task_type'] in ["diff_task","monitor_task","loop"] %}
                                             <td><span class="label label-danger">已暂停</span></td>
                                         {% else %}
                                             <td><span class="label label-primary">无</span></td>
@@ -134,12 +140,12 @@
                                             </button>
                                             {% if i['next_run_time']!="无" %}
                                                 <button type="button" class="btn btn-info btn-xs"
-                                                        onclick="javascript:window.location.href='/edit_diff_task?task_name={{ i['name'] }}'">
+                                                        onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}&task_type={{ i['task_type'] }}'">
                                                     编辑任务
                                                 </button>
                                             {% else %}
                                                 <button type="button" class="btn btn-info btn-xs" disabled="disabled"
-                                                        onclick="javascript:window.location.href='/edit_diff_task?task_name={{ i['name'] }}' ">
+                                                        onclick="javascript:window.location.href='/edit_task?task_name={{ i['name'] }}' ">
                                                     编辑任务
                                                 </button>
                                             {% endif %}
@@ -153,7 +159,7 @@
                                                         onclick="pause_scheduler('{{ i['name'] }}')">暂停循环
                                                 </button>
                                             {% else %}
-                                                {% if i['task_type']=="loop" %}
+                                                {% if i['task_type'] in ["diff_task","loop","monitor_task"] %}
                                                     <button type="button" class="btn btn-info btn-xs"
                                                             onclick="resume_scheduler('{{ i['name'] }}')">启动循环
                                                     </button>

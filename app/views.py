@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFError
 from app.lib.validate import TaskValidate
 from lib.login_handle import login_check
 from . import app, Mongo, scheduler, csrf, redis_web
-from app.lib.common import add_ip, delete_ip, is_last_task, send_mail
+from app.lib.common import add_ip, delete_ip, is_last_task, send_mail,convert_ip_port_to_details
 
 
 @app.template_filter("timestamp2str")
@@ -239,50 +239,55 @@ def total():
                            service_pie=service_pie, scan_result=scan_result)
 
 
-@app.route("/diff_result", methods=["get"])
+@app.route("/task_result", methods=["get"])
 @login_check
 @csrf.exempt
-def diff_result():
+def task_result():
     task_id = request.args.get("task_id", "")
 
     resp = {}
-    add_ips, add_ports = [], []
+
     if task_id:
         cursor = Mongo.coll["tasks"].find_one({"_id": ObjectId(task_id)})
-        if cursor and cursor["diff_result"]["diff"]:
-            resp["title"] = cursor["create_time"].strftime("%Y-%m-%d")
-            if "add_ips" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ips"]) > 0:
-                resp["add_ips"] = cursor["diff_result"]["add_ips"]
+        resp["title"] = cursor["create_time"].strftime("%Y-%m-%d")
+        if cursor.get("task_type", "") in ["diff_task", "loop"]:
 
-            if "add_ports" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ports"]) > 0:
+            if cursor["diff_result"]["diff"]:
+                add_ips, add_ports = [], []
 
-                for i in cursor["diff_result"]["add_ports"]:
-                    ip, port = i.split(":")
+                if "add_ips" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ips"]) > 0:
+                    resp["add_ips"] = cursor["diff_result"]["add_ips"]
 
-                    c = Mongo.coll["scan_result"].find_one({"ip": ip, "port": int(port)}, sort=[("create_time", -1)])
+                if "add_ports" in cursor["diff_result"].keys() and len(cursor["diff_result"]["add_ports"]) > 0:
 
-                    add_ports.append({"ip": i, "service": c["service"], "version_info": c["version_info"].strip()})
-                resp["add_ports"] = add_ports
+                    resp["add_ports"] = convert_ip_port_to_details(cursor["diff_result"]["add_ports"])
+        elif cursor.get("task_type", "") == "monitor_task":
+            if cursor["monitor_result"]["monitor"]:
+                resp["monitor_details"]=convert_ip_port_to_details(cursor["monitor_result"]["ip_port"])
+
+        else:
+            pass
     return json.dumps(resp)
 
 
-@app.route("/add_diff_task", methods=["get", "post"])
+@app.route("/add_task", methods=["get", "post"])
 @login_check
-def add_diff_task():
+def add_task():
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
-        validate_result = form.check("add_diff_task")
+        validate_result = form.check("add_task")
 
         if validate_result["status"] == "success":
-            if form.job_unit == "no":
-                task_type = "normal"
-            else:
-                task_type = "loop"
+            task_type = request.args.get("task_type", "normal_task")
+            # if form.job_unit == "no":
+            #     task_type = "normal"
+            # else:
+            #     task_type = "diff_task"
 
             cron = " ".join([form.job_time, form.job_unit])
             if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron, form.white_ip):
-                if task_type == "loop":
+                if task_type in ["monitor_task", "diff_task"]:
                     form.job_time = float(form.job_time)
                     if form.job_unit == "days":
                         job_unit = "days"
@@ -294,52 +299,17 @@ def add_diff_task():
                                                 task_type, cron, form.white_ip),
                                             trigger="interval", replace_existing=True, **{job_unit: form.job_time})
 
-                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/diff_task"})
+                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/"})
             else:
                 return dumps({"status": "error", "content": "添加任务失败"})
         return dumps(validate_result)
 
 
     else:
-        return render_template("add_diff_task.html")
+        template_name = "add_diff_task.html" if request.args.get("task_type", "") == "diff_task" else (
+            "add_normal_task.html" if request.args.get("task_type", "") == "normal_task" else "add_monitor_task.html")
+        return render_template(template_name, task_type=request.args.get("task_type", ""))
 
-
-
-@app.route("/add_monitor_task", methods=["get", "post"])
-def add_monitor_task():
-    if request.method == "POST":
-
-        form = TaskValidate(**request.form)
-        validate_result = form.check("diff_task")
-
-        if validate_result["status"] == "success":
-            if form.job_unit == "no":
-                task_type = "normal"
-            else:
-                task_type = "loop"
-
-            cron = " ".join([form.job_time, form.job_unit])
-            if add_ip(form.task_name, form.task_ips, form.task_ports, task_type, cron, form.white_ip):
-                if task_type == "loop":
-                    form.job_time = float(form.job_time)
-                    if form.job_unit == "days":
-                        job_unit = "days"
-                    else:
-                        job_unit = "hours"
-                    job = scheduler.add_job(func="app.lib.common:add_ip", id=form.task_name,
-                                            args=(
-                                                form.task_name, form.task_ips, form.task_ports,
-                                                task_type, cron, form.white_ip),
-                                            trigger="interval", replace_existing=True, **{job_unit: form.job_time})
-
-                return dumps({"status": "success", "content": "添加任务成功", "redirect": "/diff_task"})
-            else:
-                return dumps({"status": "error", "content": "添加任务失败"})
-        return dumps(validate_result)
-
-
-    else:
-        return render_template("add_monitor_task.html")
 
 @app.route("/pause_scheduler")
 @login_check
@@ -356,23 +326,24 @@ def pause_scheduler():
     return dumps(result)
 
 
-@app.route("/edit_diff_task", methods=["get", "post"])
+@app.route("/edit_task", methods=["get", "post"])
 @login_check
-def edit_diff_task():
+def edit_task():
     if request.method == "POST":
 
         form = TaskValidate(**request.form)
-        validate_result = form.check("edit_diff_task")
+        validate_result = form.check("edit_task")
 
         if validate_result["status"] == "success":
-            if form.job_unit == "no":
-                task_type = "normal"
-            else:
-                task_type = "loop"
+            task_type = request.args.get("task_type", "normal_task")
+            # if form.job_unit == "no":
+            #     task_type = "normal_task"
+            # else:
+            #     task_type = "diff_task"
 
             cron = " ".join([form.job_time, form.job_unit])
 
-            if task_type == "loop":
+            if task_type in ["monitor_task", "diff_task"]:
 
                 form.job_time = float(form.job_time)
                 if form.job_unit == "days":
@@ -413,7 +384,8 @@ def edit_diff_task():
             task_args["job_time"], task_args["job_unit"] = cron.split(" ")
             task_args["white_ip"] = task_args["white_ip"].strip()
 
-        return render_template("edit_diff_task.html", task_args=task_args)
+        template_name = "edit_diff_task.html" if request.args.get("task_type", "") == "diff_task" else "edit_monitor_task.html"
+        return render_template(template_name, task_args=task_args,task_type=request.args.get("task_type", ""))
 
 
 @app.route("/resume_scheduler")
@@ -431,7 +403,7 @@ def resume_scheduler():
     return dumps(result)
 
 
-@app.route("/test_email",methods=["POST"])
+@app.route("/test_email", methods=["POST"])
 def test_email():
     result = {"status": "error", "content": "邮件发送失败"}
 
@@ -575,7 +547,7 @@ def runtime_error():
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
-    return redirect(url_for("Error"))
+    return redirect(url_for("login"))
 
 
 @app.errorhandler(404)

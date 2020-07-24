@@ -1,122 +1,24 @@
-{% extends 'task_base.html' %}
+{% extends 'add_task_base.html' %}
 {% block title %}添加比较端口变化{% endblock %}
-{% block content %}
-
+{% block  section%}
     <!-- Content Header (Page header) -->
     <section class="content-header">
-
         <h1>
-            添加比较端口变化任务：<small>用于比较两次端口扫描的差异</small>
+            添加比较端口变化任务：<small>用于比较两次扫描的端口变化</small>
         </h1>
         <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
-            <li class="active">添加比较端口变化</li>
+            <li class="active">添加比较端口变化任务</li>
         </ol>
     </section>
-
-    <!-- Main content -->
-
-
-    <section class="content">
-
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="box box-danger">
-
-                    <!-- /.box-header -->
-                    <form class="form-horizontal " id="task_form" action="/add_diff_task" method='POST'>
-
-                        <div class="box-body">
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label">任务名称</label>
-
-                                <div class="col-sm-10">
-                                    <input type="text" name="task_name" class="form-control" placeholder="任务名称不能重复"
-                                           required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label">扫描IP</label>
-
-                                <div class="col-sm-10">
-                                    <textarea rows="4" class="col-sm-12" name="task_ips"
-                                              placeholder="支持192.168.1.1-192.168.1.254和192.168.1.1格式。并且两种格式混用，如：&#13;&#10;192.168.1.200-192.168.2.123&#13;&#10;192.168.100.123" required></textarea>
-
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label">扫描端口</label>
-
-                                <div class="col-sm-10">
-                                    <input type="text" name="task_ports" class="form-control"
-                                           placeholder="仅支持1-65535和80格式" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group ">
-                                <label class="col-sm-2 control-label">循环周期</label>
-                                <div class="col-sm-4">
-                                    <input name="job_time" type="text" class="form-control"
-                                           placeholder="数字" required>
-                                </div>
-                                <div class="col-sm-6">
-
-                                    <select class="form-control" name="job_unit">
-
-                                        <option value="hours">小时</option>
-                                        <option value="days">天</option>
-                                        <option value="no">不循环</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label">IP白名单</label>
-
-                                <div class="col-sm-10">
-                                    <textarea rows="20" class="col-sm-12" name="white_ip"
-                                              placeholder="排除扫描的IP，一行一个，如：&#13;&#10;192.168.1.123&#13;&#10;192.168.1.200-192.168.2.123"></textarea>
-
-
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <!-- /.box-body -->
-                        <div class="box-footer">
-
-                            <button type="submit" id="task_submit" class="btn btn-info pull-right">提交</button>
-                        </div>
-                        <!-- /.box-footer -->
-                    </form>
-                    <!-- /.box-body -->
-
-                </div>
-                <!-- /.box -->
-
-
-            </div>
-            <!-- /.col -->
-
-            <!-- /.col -->
-        </div>
-
-
-        <!-- Default box -->
-
-        <!-- /.box-body -->
-
-    </section>
-
-
-
-
-
-    <!-- /.content -->
-
 {% endblock %}
+{% block div %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">扫描端口</label>
 
-
-
-
+        <div class="col-sm-10">
+            <input type="text" name="task_ports" class="form-control"
+                   placeholder="仅支持1-65535和80格式" required>
+        </div>
+    </div>
+{% endblock %}

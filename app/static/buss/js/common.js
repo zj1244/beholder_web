@@ -62,6 +62,7 @@ $("#setting_submit").click(function () {
 $(document).ready(function () {
     $("#diff_ports").hide();
     $('#diff_ips').hide();
+    $("#monitor_div").hide();
 });
 
 $("button#delete_node").click(function () {
@@ -158,78 +159,3 @@ $("select[name='job_unit']").click(function () {
 
 });
 
-
-$("a[name='history_scan']").on("click", function () {
-    var task_id = $(this).attr('id');
-    var ports_dataset = new Array();
-    var ips_dataset = new Array();
-    var ports_table = $('#ports_table').DataTable();
-    var ips_table = $('#ips_table').DataTable();
-
-    // $('#ips_row').empty();
-    // $('#ports_row').empty()
-// $('#ports_table').DataTable().clear();
-    $.getJSON('/diff_result?task_id=' + task_id, function (data) {
-
-
-        if (JSON.stringify(data) == '{}') {
-            console.log("data is null!");
-            $("#diff_ips").hide();
-            $("#diff_ports").hide();
-        } else {
-
-            if (data.hasOwnProperty("add_ports")) {
-                if ($("#diff_ports").is(':hidden')) {
-                    $("#diff_ports").show();
-                }
-                $("#add_ports_title").text(data['title'] + "日与上次对比结果")
-                ports_table.destroy();
-                $('#ports_table').empty();
-                $.each(data['add_ports'], function (i, info) {
-                    ports_dataset.push([info['ip'], info['service'], info['version_info']])
-                });
-
-            } else {
-                $("#diff_ports").hide();
-            }
-
-            if (data.hasOwnProperty("add_ips")) {
-                if ($("#diff_ips").is(':hidden')) {
-                    $("#diff_ips").show();
-                }
-                $("#add_ips_title").text(data['title'] + "日与上次对比结果")
-                ips_table.destroy();
-                $('#ips_table').empty();
-                $.each(data['add_ips'], function (i, info) {
-                    // $('#ips_row').append("<tr><td>" + info + "</td></tr>")
-                    ips_dataset.push([info])
-                });
-            } else {
-                $("#diff_ips").hide();
-
-            }
-            // $("#ports_table").DataTable({"destroy": true});
-            // $('#ports_table').DataTable();
-            ports_table = $('#ports_table').DataTable({
-                columns: [
-                    {title: "新增端口"},
-                    {title: "服务"},
-                    {title: "软件信息"}
-                ],
-                retrieve: true,
-                data: ports_dataset
-            });
-
-            ports_table = $('#ips_table').DataTable({
-                columns: [
-                    {title: "新增IP"}
-                ],
-                retrieve: true,
-                data: ips_dataset
-            });
-
-            // $('#ips_table').DataTable();
-        }
-
-    })
-});

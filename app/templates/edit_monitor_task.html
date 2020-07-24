@@ -1,14 +1,14 @@
-{% extends 'add_task_base.html' %}
-{% block title %}添加监控端口开放任务{% endblock %}
+{% extends 'edit_task_base.html' %}
+{% block title %}编辑监控端口开放任务{% endblock %}
 {% block  section%}
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            添加监控端口开放任务：<small>用于监控高危端口的开放情况</small>
+            编辑监控端口开放任务：<small>用于监控高危端口的开放情况</small>
         </h1>
         <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
-            <li class="active">添加监控端口开放任务</li>
+            <li class="active">编辑监控端口开放任务</li>
         </ol>
     </section>
 {% endblock %}
@@ -18,7 +18,7 @@
 
         <div class="col-sm-10">
             <input type="text" name="task_ports" class="form-control"
-                   placeholder="仅支持1-65535和80格式" required>
+                   placeholder="仅支持1-65535和80格式"  value="{{ task_args['task_ports'] }}"  required>
         </div>
     </div>
 {% endblock %}

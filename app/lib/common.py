@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import json, struct, socket
 import re
+import requests
 from datetime import datetime
 
 from log_handle import Log
@@ -32,7 +33,6 @@ def send_mail(subject, contents, host, use_ssl, sender, pwd, email_address):
         Log().exception(e)
         return False
     return True
-
 
 
 def get_ip_list(ips):
@@ -85,6 +85,19 @@ def delete_ip(task_id=""):
                     redis_web.zremrangebyscore(ack, "-INF", "+INF")
 
 
+def convert_ip_port_to_details(ip_port_list=None):
+    res=[]
+    if ip_port_list is None:
+        ip_port_list = []
+    for i in ip_port_list:
+        ip, port = i.split(":")
+
+        c = Mongo.coll["scan_result"].find_one({"ip": ip, "port": int(port)},
+                                               sort=[("create_time", -1)])
+
+        res.append({"ip": i, "service": c["service"], "version_info": c["version_info"].strip()})
+    return res
+
 def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
     mongo_task = Mongo.coll['tasks']
     if mongo_task.find_one({"name": task_name, "task_status": {"$ne": "finish"}}):  # 有没完成的任务就不插入新任务了
@@ -93,16 +106,29 @@ def add_ip(task_name, task_ips, task_ports, task_type, cron, white_ip=""):
     ips = get_ip_list(task_ips)
     try:
         Log().info("开始插入数据")
+
         white_ip = get_ip_list(white_ip)
         ips = set(ips) - set(white_ip)
         if not ips:
             return False
         pipe = redis_web.pipe()
+        if task_type == "monitor_task":
+            task_result = {
+                "monitor_result": {"monitor": 0}
+            }
+        elif task_type == "diff_task":
+            task_result = {
+                "diff_result": {"diff": 0}
+            }
+
+        else:
+            task_result = {}
 
         insert_result = mongo_task.insert_one(
-            {"name": task_name, "ip": task_ips, "port": task_ports, "diff_result": {"diff": 0},
-             "task_status": "ready", "create_time": create_time,
-             "task_type": task_type, "cron": cron})
+            dict({"name": task_name, "ip": task_ips, "port": task_ports,
+                  "task_status": "ready", "create_time": create_time,
+                  "task_type": task_type, "cron": cron}, **task_result))
+
         nmapscan_key = "scan_" + str(insert_result.inserted_id)
 
         for ip in ips:

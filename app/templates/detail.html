@@ -57,7 +57,7 @@
                             <tbody>
                             <tr>
                                 <th width="10%">任务名称</th>
-                                <th width="10%">扫描类型</th>
+                                <th width="10%">任务类型</th>
                                 <th width="30%">扫描IP</th>
                                 <th width="10%">扫描端口</th>
                                 <th width="10%">扫描次数</th>
@@ -67,10 +67,12 @@
                             </tr>
                             <tr>
                                 <td>{{ task_info.task_name }}</td>
-                                {% if task_info.task_type=="loop" %}
-                                    <td>循环扫描</td>
+                                {% if task_info.task_type in ["diff_task","loop"] %}
+                                    <td id="task_type" name="{{ task_info.task_type }}">端口变化</td>
+                                {% elif task_info.task_type=="monitor_task" %}
+                                    <td id="task_type" name="{{ task_info.task_type }}">端口开放</td>
                                 {% else %}
-                                    <td>常规扫描</td>
+                                    <td id="task_type" name="{{ task_info.task_type }}">普通扫描</td>
                                 {% endif %}
 
                                 <td>
@@ -79,17 +81,18 @@
 
                                 </td>
                                 <td>
-                                    <span data-toggle="tooltip" data-placement="left" title="{{ task_info.port }}">{{ task_info.port }}</span>
+                                    <span data-toggle="tooltip" data-placement="left"
+                                          title="{{ task_info.port }}">{{ task_info.port }}</span>
 
                                 </td>
                                 <td>{{ task_info.scan_count }}</td>
                                 <td>{{ task_info.create_time }}</td>
-                                {% if task_info.task_type=="loop" %}
+                                {% if task_info.task_type in ["diff_task","loop","monitor_task"] %}
                                     <td>{{ task_info.cron | replace("days","天") | replace("hours","小时") }}</td>
                                 {% else %}
                                     <td>无</td>
                                 {% endif %}
-                                {% if task_info.task_type=="loop" %}
+                                {% if task_info.task_type in ["diff_task","loop","monitor_task"] %}
                                     <td>{{ task_info.next_run_time }}</td>
                                 {% else %}
                                     <td>无</td>
@@ -118,65 +121,109 @@
                         <table class="table  table-hover"
                                style="border-left:3px solid green;border-bottom:1px solid green" id="history_table">
                             <thead>
-                            <tr>
-                                <th>扫描次数</th>
-                                <th>开始时间</th>
-                                <th>完成时间</th>
-                                <th>扫描状态</th>
-                                <th>是否比较</th>
-                                <th>新增IP个数</th>
-                                <th>新增端口个数</th>
-                            </tr>
+                            {% if task_info.task_type in ["diff_task","loop"] %}
+                                <tr>
+                                    <th>扫描次数</th>
+                                    <th>开始时间</th>
+                                    <th>完成时间</th>
+                                    <th>扫描状态</th>
+                                    <th>是否比较</th>
+                                    <th>新增IP个数</th>
+                                    <th>新增端口个数</th>
+                                </tr>
+                            {% elif task_info.task_type=="monitor_task" %}
+                                <tr>
+                                    <th>扫描次数</th>
+                                    <th>开始时间</th>
+                                    <th>完成时间</th>
+                                    <th>扫描状态</th>
+                                    <th>开放端口个数</th>
+                                </tr>
+                            {% endif %}
+
                             </thead>
                             <tbody>
 
 
                             {% for i in tasks %}
-                                <tr>
-                                    <td><b><a href="javascript:void(0)" name="history_scan" id="{{ i['_id'] }}">
-                                        #{{ loop.index }}</a></b></td>
-                                    <td>{{ i.create_time }}</td>
-                                    <td>{{ i.end_time }}</td>
-                                    {% if i['task_status']=='finish' %}
-                                        <td><span class="label label-success">扫描结束</span></td>
-                                    {% elif i['task_status']=='ready' %}
+                                {% if task_info.task_type in ["diff_task","loop"] %}
+                                    <tr>
+                                        <td><b><a href="javascript:void(0)" name="history_scan" id="{{ i['_id'] }}">
+                                            #{{ loop.index }}</a></b></td>
+                                        <td>{{ i.create_time }}</td>
+                                        <td>{{ i.end_time }}</td>
+                                        {% if i['task_status']=='finish' %}
+                                            <td><span class="label label-success">扫描结束</span></td>
+                                        {% elif i['task_status']=='ready' %}
 
-                                        <td><span class="label label-primary">等待扫描</span></td>
-                                    {% else %}
-
-                                        <td><span class="label label-warning">扫描中</span></td>
-                                    {% endif %}
-
-                                    {% if i['diff_result']['diff']==1 %}
-                                        <td><span class="label label-success">已比较</span></td>
-                                    {% else %}
-                                        <td><span class="label label-primary">未比较</span></td>
-                                    {% endif %}
-
-
-
-                                    {% if i['diff_result']['diff']==1 %}
-                                        {% if i['diff_result']['add_ips'] | length >0 %}
-
-                                            <td>{{ i['diff_result']['add_ips'] | length }}</td>
+                                            <td><span class="label label-primary">等待扫描</span></td>
                                         {% else %}
-                                            <td>0</td>
+
+                                            <td><span class="label label-warning">扫描中</span></td>
                                         {% endif %}
-                                    {% else %}
-                                        <td>未比较</td>
-                                    {% endif %}
 
-                                    {% if i['diff_result']['diff']==1 %}
-                                        {% if i['diff_result']['add_ports'] | length >0 %}
-
-                                            <td>{{ i['diff_result']['add_ports'] | length }}</td>
+                                        {% if i['diff_result']['diff']==1 %}
+                                            <td><span class="label label-success">已比较</span></td>
                                         {% else %}
-                                            <td>0</td>
+                                            <td><span class="label label-primary">未比较</span></td>
                                         {% endif %}
-                                    {% else %}
-                                        <td>未比较</td>
-                                    {% endif %}
-                                </tr>
+
+
+
+                                        {% if i['diff_result']['diff']==1 %}
+                                            {% if i['diff_result']['add_ips'] | length >0 %}
+
+                                                <td>{{ i['diff_result']['add_ips'] | length }}</td>
+                                            {% else %}
+                                                <td>0</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td>未比较</td>
+                                        {% endif %}
+
+                                        {% if i['diff_result']['diff']==1 %}
+                                            {% if i['diff_result']['add_ports'] | length >0 %}
+
+                                                <td>{{ i['diff_result']['add_ports'] | length }}</td>
+                                            {% else %}
+                                                <td>0</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td>未比较</td>
+                                        {% endif %}
+                                    </tr>
+                                {% elif task_info.task_type=="monitor_task" %}
+                                    <tr>
+                                        <td><b><a href="javascript:void(0)" name="history_scan" id="{{ i['_id'] }}">
+                                            #{{ loop.index }}</a></b></td>
+                                        <td>{{ i.create_time }}</td>
+                                        <td>{{ i.end_time }}</td>
+                                        {% if i['task_status']=='finish' %}
+                                            <td><span class="label label-success">扫描结束</span></td>
+                                        {% elif i['task_status']=='ready' %}
+
+                                            <td><span class="label label-primary">等待扫描</span></td>
+                                        {% else %}
+
+                                            <td><span class="label label-warning">扫描中</span></td>
+                                        {% endif %}
+
+
+
+
+                                        {% if i['monitor_result']['monitor']==1 %}
+                                            {% if i['monitor_result']['ip_port'] | length >0 %}
+
+                                                <td>{{ i['monitor_result']['ip_port'] | length }}</td>
+                                            {% else %}
+                                                <td>0</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td>未入库</td>
+                                        {% endif %}
+
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
 
                             </tbody>
@@ -185,54 +232,80 @@
                     <!-- /.box-body -->
                 </div>
                 <!-- /.box -->
+                {% if task_info.task_type in ["diff_task","loop"] %}
 
+                    <div class="box" id="diff_ports">
+                        <div class="box-header with-border">
+                            <h3 class="box-title"><b id="add_ports_title">新增端口</b></h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body" id="ports_div">
+                            <table class="table  table-hover"
+                                   style="border-left:3px solid purple;border-bottom:1px solid purple" id="ports_table">
+                                <thead>
+                                <tr>
+                                    <th>新增端口</th>
+                                    <th>服务</th>
+                                    <th>软件信息</th>
+                                </tr>
+                                </thead>
+                                <tbody>
 
-                <div class="box" id="diff_ports">
-                    <div class="box-header with-border">
-                        <h3 class="box-title"><b id="add_ports_title">新增端口</b></h3>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
                     </div>
-                    <!-- /.box-header -->
-                    <div class="box-body" id="ports_div">
-                        <table class="table  table-hover"
-                               style="border-left:3px solid purple;border-bottom:1px solid purple" id="ports_table">
-                            <thead>
-                            <tr>
-                                <th>新增端口</th>
-                                <th>服务</th>
-                                <th>软件信息</th>
-                            </tr>
-                            </thead>
-                            <tbody>
 
-                            </tbody>
-                        </table>
+                    <div class="box" id="diff_ips">
+                        <div class="box-header with-border">
+                            <h3 class="box-title"><b id="add_ips_title">新增IP</b></h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table  table-hover"
+                                   style="border-left:3px solid purple;border-bottom:1px solid purple" id="ips_table">
+                                <thead>
+                                <tr>
+                                    <th>新增IP</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
+
                     </div>
-                    <!-- /.box-body -->
-                </div>
+                {% else %}
+                    <div class="box" id="monitor_div">
+                        <div class="box-header with-border">
+                            <h3 class="box-title"><b id="monitor_title">端口监控信息</b></h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table  table-hover"
+                                   style="border-left:3px solid purple;border-bottom:1px solid purple"
+                                   id="monitor_table">
+                                <thead>
+                                <tr>
+                                    <th>IP</th>
+                                    <th>服务</th>
+                                    <th>软件信息</th>
+                                </tr>
+                                </thead>
+                                <tbody>
 
-                <div class="box" id="diff_ips">
-                    <div class="box-header with-border">
-                        <h3 class="box-title"><b id="add_ips_title">新增IP</b></h3>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
+
                     </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-                        <table class="table  table-hover"
-                               style="border-left:3px solid purple;border-bottom:1px solid purple" id="ips_table">
-                            <thead>
-                            <tr>
-                                <th>新增IP</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- /.box-body -->
-
-                </div>
-
+                {% endif %}
             </div>
             <!-- /.col -->
 
@@ -265,6 +338,7 @@
     <script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
     <script>
+
         $(document).ready(function () {
             $('#history_table').DataTable({
                 "searching": false,
@@ -272,6 +346,120 @@
             });
         });
 
+
+        $("a[name='history_scan']").on("click", function () {
+
+            var task_id = $(this).attr('id');
+            var ports_dataset = new Array();
+            var ips_dataset = new Array();
+            var monitor_dataset = new Array();
+            var ports_table = $('#ports_table').DataTable();
+            var ips_table = $('#ips_table').DataTable();
+            var monitor_table = $('#monitor_table').DataTable();
+            var task_type = $('#task_type').attr("name")
+
+            var url = '/task_result?task_id=' + task_id;
+// $('#ports_table').DataTable().clear();
+            $.getJSON(url, function (data) {
+                {% if task_info.task_type in ["diff_task","loop"] %}
+
+                    if (JSON.stringify(data) == '{}') {
+                        console.log("data is null!");
+                        $("#diff_ips").hide();
+                        $("#diff_ports").hide();
+                    } else {
+
+                        if (data.hasOwnProperty("add_ports")) {
+                            if ($("#diff_ports").is(':hidden')) {
+                                $("#diff_ports").show();
+                            }
+                            $("#add_ports_title").text(data['title'] + "日与上次对比结果")
+                            ports_table.destroy();
+                            $('#ports_table').empty();
+                            $.each(data['add_ports'], function (i, info) {
+                                ports_dataset.push([info['ip'], info['service'], info['version_info']])
+                            });
+
+                        } else {
+                            $("#diff_ports").hide();
+                        }
+
+                        if (data.hasOwnProperty("add_ips")) {
+                            if ($("#diff_ips").is(':hidden')) {
+                                $("#diff_ips").show();
+                            }
+                            $("#add_ips_title").text(data['title'] + "日与上次对比结果")
+                            ips_table.destroy();
+                            $('#ips_table').empty();
+                            $.each(data['add_ips'], function (i, info) {
+                                // $('#ips_row').append("<tr><td>" + info + "</td></tr>")
+                                ips_dataset.push([info])
+                            });
+                        } else {
+                            $("#diff_ips").hide();
+
+                        }
+                        // $("#ports_table").DataTable({"destroy": true});
+                        // $('#ports_table').DataTable();
+                        ports_table = $('#ports_table').DataTable({
+                            columns: [
+                                {title: "新增端口"},
+                                {title: "服务"},
+                                {title: "软件信息"}
+                            ],
+                            retrieve: true,
+                            data: ports_dataset
+                        });
+
+                        ports_table = $('#ips_table').DataTable({
+                            columns: [
+                                {title: "新增IP"}
+                            ],
+                            retrieve: true,
+                            data: ips_dataset
+                        });
+
+                        // $('#ips_table').DataTable();
+                    }
+
+                {% else %}
+                    if (JSON.stringify(data) == '{}') {
+                        console.log("data is null!");
+                        $("#monitor_div").hide();
+
+                    } else {
+
+                        if (data.hasOwnProperty("monitor_details")) {
+                            if ($("#monitor_div").is(':hidden')) {
+                                $("#monitor_div").show();
+                            }
+                            $("#monitor_title").text(data['title'] + " 端口监控信息")
+                            monitor_table.destroy();
+                            $('#monitor_table').empty();
+                            $.each(data['monitor_details'], function (i, info) {
+                                monitor_dataset.push([info['ip'], info['service'], info['version_info']])
+                            });
+
+                        } else {
+                            $("#monitor_div").hide();
+                        }
+
+
+                        ports_table = $('#monitor_table').DataTable({
+                            columns: [
+                                {title: "IP"},
+                                {title: "服务"},
+                                {title: "软件信息"}
+                            ],
+                            retrieve: true,
+                            data: monitor_dataset
+                        });
+
+
+                    }
+                {% endif %}
+            })
+        });
 
     </script>
 

@@ -11,7 +11,7 @@ class TaskValidate(object):
         self.task_ips = "".join(kwargs.get("task_ips", "")).strip()
         self.task_ports = "".join(kwargs.get("task_ports", ""))
         self.job_time = "".join(kwargs.get("job_time", ""))
-        self.job_unit = "".join(kwargs.get("job_unit", ""))
+        self.job_unit = "".join(kwargs.get("job_unit", "no"))
         self.white_ip = "".join(kwargs.get("white_ip", ""))
         self.result = {}
 
@@ -75,7 +75,7 @@ class TaskValidate(object):
         if self.check_job_unit():
             return self.result
 
-        if form == "add_diff_task":
+        if form == "add_task":
             if self.check_task_name():
                 return self.result
 
