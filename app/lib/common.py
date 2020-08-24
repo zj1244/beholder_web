@@ -23,8 +23,12 @@ def send_mail(subject, contents, host, use_ssl, sender, pwd, email_address):
                           To=email_address, charset="utf-8")
         message.Subject = subject
         message.Html = contents
-        mailer = Mailer(host=host, use_ssl=use_ssl, usr=sender[:sender.find("@")],
-                        pwd=pwd)
+        if host in ["smtp.qiye.aliyun.com","smtp.mxhichina.com"]:
+            mailer = Mailer(host=host, use_ssl=use_ssl, usr=sender,
+                            pwd=pwd)
+        else:
+            mailer = Mailer(host=host, use_ssl=use_ssl, usr=sender[:sender.find("@")],
+                            pwd=pwd)
 
         mailer.send(message, debug=False)
 
