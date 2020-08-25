@@ -162,7 +162,7 @@
                                             <td><span class="label label-warning">扫描中</span></td>
                                         {% endif %}
 
-                                        {% if i['diff_result']['diff']==1 %}
+                                        {% if i.get('diff_result',{}).get('diff',0)==1 %}
                                             <td><span class="label label-success">已比较</span></td>
                                         {% else %}
                                             <td><span class="label label-primary">未比较</span></td>
@@ -170,7 +170,7 @@
 
 
 
-                                        {% if i['diff_result']['diff']==1 %}
+                                        {% if i.get('diff_result',{}).get('diff',0)==1 %}
                                             {% if i['diff_result']['add_ips'] | length >0 %}
 
                                                 <td>{{ i['diff_result']['add_ips'] | length }}</td>
@@ -181,7 +181,7 @@
                                             <td>未比较</td>
                                         {% endif %}
 
-                                        {% if i['diff_result']['diff']==1 %}
+                                        {% if i.get('diff_result',{}).get('diff',0)==1 %}
                                             {% if i['diff_result']['add_ports'] | length >0 %}
 
                                                 <td>{{ i['diff_result']['add_ports'] | length }}</td>
