@@ -88,6 +88,9 @@
                                             {% elif setting_data['send_type']=='change' %}
                                                 <option value="always">每次扫描完毕都发送邮件</option>
                                                 <option value="change" selected>只有出现端口变化或监控端口开放时发送</option>
+                                            {% else %}
+                                                <option value="always">每次扫描完毕都发送邮件</option>
+                                                <option value="change">只有出现端口变化或监控端口开放时发送</option>
                                             {% endif %}
                                         </select>
 
