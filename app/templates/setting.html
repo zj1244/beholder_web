@@ -43,7 +43,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">扫描并发数</label>
 
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
                                     <input type="text" name="scanning_num" class="form-control" placeholder="每个节点的扫描并发数"
                                            value="{{ setting_data['scanning_num'] }}"
                                     >
@@ -52,7 +52,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">发送结果</label>
 
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
                                     {% if setting_data["mail_enable"]=="on" %}
 
                                         <input style="margin-right: 5px;" name="mail_enable" type="checkbox" checked>
@@ -62,9 +62,44 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label class="col-sm-2 control-label">发送方式</label>
+
+                                <div class="col-sm-6">
+
+                                    {% if setting_data["mail_enable"]=="on" %}
+                                        <select name="send_type" class="form-control email_info">
+                                            {% if setting_data['send_type']=='always' %}
+                                                <option value="always" selected>每次扫描完毕都发送邮件</option>
+                                                <option value="change">只有出现端口变化或监控端口开放时发送</option>
+                                            {% elif setting_data['send_type']=='change' %}
+                                                <option value="always">每次扫描完毕都发送邮件</option>
+                                                <option value="change" selected>只有出现端口变化或监控端口开放时发送</option>
+                                            {% endif %}
+
+                                        </select>
+
+
+                                    {% else %}
+
+                                        <select name="send_type" class="form-control email_info" disabled="disabled">
+                                            {% if setting_data['send_type']=='always' %}
+                                                <option value="always" selected>每次扫描完毕都发送邮件</option>
+                                                <option value="change">只有出现端口变化或监控端口开放时发送</option>
+                                            {% elif setting_data['send_type']=='change' %}
+                                                <option value="always">每次扫描完毕都发送邮件</option>
+                                                <option value="change" selected>只有出现端口变化或监控端口开放时发送</option>
+                                            {% endif %}
+                                        </select>
+
+                                    {% endif %}
+
+
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label class="col-sm-2 control-label">邮件服务器</label>
 
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
                                     {% if setting_data["mail_enable"]=="on" %}
                                         <input type="text" name="email_server" class="form-control email_info"
                                                placeholder="smtp.139.com" value="{{ setting_data['email_server'] }}">
@@ -77,7 +112,7 @@
 
                             <div class="form-group ">
                                 <label class="col-sm-2 control-label">发件人邮箱</label>
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
                                     {% if setting_data["mail_enable"]=="on" %}
                                         <input name="sender" type="text" class="form-control email_info"
                                                placeholder="zhangsan@139.com" value="{{ setting_data['sender'] }}">
@@ -91,7 +126,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">发件人邮箱密码</label>
 
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
                                     {% if setting_data["mail_enable"]=="on" %}
                                         <input type="password" name="email_pwd" class="form-control email_info"
                                                placeholder="123456" value="{{ setting_data['email_pwd'] }}">
@@ -104,7 +139,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">收件人</label>
 
-                                <div class="col-sm-5">
+                                <div class="col-sm-6">
 
                                     {% if setting_data["mail_enable"]=="on" %}
                                         <input type="text" name="email_address" class="form-control email_info"
@@ -128,10 +163,12 @@
                                     style="float:left;margin-left:10px;">提交
                             </button>
                             {% if setting_data["mail_enable"]=="on" %}
-                                <input name="test_email" type="button" id="test_email" class="btn btn-info pull-right email_info"
+                                <input name="test_email" type="button" id="test_email"
+                                       class="btn btn-info pull-right email_info"
                                        value="发送测试邮件" onclick="send_email()"/>
                             {% else %}
-                                <input name="test_email" type="button" id="test_email" class="btn btn-info pull-right email_info"
+                                <input name="test_email" type="button" id="test_email"
+                                       class="btn btn-info pull-right email_info"
                                        value="发送测试邮件" onclick="send_email()" disabled="disabled"/>
                             {% endif %}
 
@@ -196,6 +233,7 @@
             offColor: "info",
 
             onSwitchChange: function (event, state) {
+                console.log($(".email_info"));
                 if (state == true) {
                     console.log("开启");
                     $(".email_info").removeAttr("disabled");

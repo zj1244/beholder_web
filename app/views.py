@@ -82,6 +82,7 @@ def delete_node():
 def setting():
     if request.method == "POST":
         form_dict = {
+            "send_type": "",
             "scanning_num": "",
             "email_server": "",
             "sender": "",
@@ -92,7 +93,7 @@ def setting():
 
         for k, v in request.form.items():
             if k in form_dict:
-                form_dict[k] = v
+                form_dict[k] = v.strip()
         if form_dict["scanning_num"]:
             try:
                 form_dict["scanning_num"] = int(form_dict["scanning_num"])
