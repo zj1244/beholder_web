@@ -12,7 +12,7 @@ RUN mkdir -p /opt/beholder_web
 COPY . /opt/beholder_web
 
 RUN set -x \
-    && pip install -r /opt/beholder_web/requirements.txt \
+    && pip install --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r /opt/beholder_scanner/requirements.txt \
     && cp /opt/beholder_web/config.env.sample /opt/beholder_web/config.env
 
 WORKDIR /opt/beholder_web
